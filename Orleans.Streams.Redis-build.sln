@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Streams.Kafka", "Orleans.Streams.Kafka\Orleans.Streams.Kafka.csproj", "{0407EEC4-2A02-4AB6-B8BA-563F39507E1B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Persistence.Redis", "Orleans.Persistence.Redis\Orleans.Persistence.Redis.csproj", "{37347FF8-3B16-42A9-A90D-8FAB38E87D6C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0407EEC4-2A02-4AB6-B8BA-563F39507E1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0407EEC4-2A02-4AB6-B8BA-563F39507E1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0407EEC4-2A02-4AB6-B8BA-563F39507E1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0407EEC4-2A02-4AB6-B8BA-563F39507E1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37347FF8-3B16-42A9-A90D-8FAB38E87D6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37347FF8-3B16-42A9-A90D-8FAB38E87D6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37347FF8-3B16-42A9-A90D-8FAB38E87D6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37347FF8-3B16-42A9-A90D-8FAB38E87D6C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
