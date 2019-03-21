@@ -46,6 +46,19 @@ namespace Orleans.Persistence.Redis.E2E
 		public override Task OnDeactivateAsync() => _stream.OnNextAsync("done");
 	}
 
+	[StorageProvider(ProviderName = "TestingProvider2")]
+	public class TestGrain2 : Grain<MockState>, ITestGrain2
+	{
+		public Task<MockState> GetTheState()
+			=> Task.FromResult(State);
+
+		public async Task SaveMe(MockState mockState)
+		{
+			State = mockState;
+			await WriteStateAsync();
+		}
+	}
+
 	public interface ITestGrain : IGrainWithStringKey
 	{
 		Task<MockState> GetTheState();
@@ -53,6 +66,12 @@ namespace Orleans.Persistence.Redis.E2E
 		Task Deactivate();
 		Task DeleteState();
 		Task WriteNullToState();
+	}
+
+	public interface ITestGrain2 : IGrainWithStringKey
+	{
+		Task<MockState> GetTheState();
+		Task SaveMe(MockState mockState);
 	}
 
 	public class MockState

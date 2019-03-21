@@ -88,6 +88,18 @@ namespace Orleans.Persistence.Redis.E2E
 			Assert.Null(state);
 		}
 
+		[Fact]
+		public async Task TestSecondProvider()
+		{
+			var grain = Cluster.GrainFactory.GetGrain<ITestGrain2>("a-key-for-the second-provider");
+			var mock = MockState.Generate();
+
+			await grain.SaveMe(mock);
+
+			var state = await grain.GetTheState();
+			Assert.Equal(mock, state);
+		}
+
 		private static async Task FlushDb()
 		{
 			using (var connection = await ConnectAsync(new ConfigurationOptions

@@ -1,6 +1,5 @@
-﻿using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Orleans.Persistence.Redis.Config;
+﻿using Orleans.Persistence.Redis.Config;
+using Orleans.Persistence.Redis.Serialization;
 using Orleans.Persistence.Redis.Utils;
 using Orleans.Storage;
 using System;
@@ -11,20 +10,30 @@ namespace Orleans.Persistence.Redis.Core
 	internal class GrainStateStore : IGrainStateStore
 	{
 		private readonly DbConnection _connection;
+		private readonly ISerializer _serializer;
 		private readonly RedisStorageOptions _options;
 
-		public GrainStateStore(DbConnection connection, IOptions<RedisStorageOptions> options)
+		public GrainStateStore(
+			DbConnection connection,
+			RedisStorageOptions options,
+			ISerializer serializer
+		)
 		{
 			_connection = connection;
-			_options = options.Value;
+			_serializer = serializer;
+			_options = options;
 		}
 
 		public async Task<IGrainState> GetGrainState(string grainId, Type stateType)
 		{
 			var state = await _connection.Database.StringGetAsync(grainId);
-			return state.HasValue
-				? (IGrainState)JsonConvert.DeserializeObject(state, stateType)
-				: null;
+			if (!state.HasValue)
+				return null;
+
+			if (_options.PlainTextSerialization)
+				return (IGrainState)_serializer.Deserialize((string)state, stateType);
+
+			return (IGrainState)_serializer.Deserialize((byte[])state, stateType);
 		}
 
 		public async Task UpdateGrainState(string grainId, IGrainState grainState)
@@ -36,7 +45,11 @@ namespace Orleans.Persistence.Redis.Core
 			}
 
 			grainState.ETag = grainState.State.ComputeHashSync();
-			await _connection.Database.StringSetAsync(grainId, JsonConvert.SerializeObject(grainState));
+
+			if (_options.PlainTextSerialization)
+				await _connection.Database.StringSetAsync(grainId, _serializer.SerializeToString(grainState));
+			else
+				await _connection.Database.StringSetAsync(grainId, _serializer.Serialize(grainState));
 		}
 
 		public Task DeleteGrainState(string grainId, IGrainState grainState)
