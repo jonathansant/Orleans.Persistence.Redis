@@ -8,7 +8,7 @@
   <PropertyGroup>
     <Authors>Jonathan Sant</Authors>
     <Company>Sucrose</Company>
-    <RepositoryUrl>https://github.com/jonathansant/Orleans.Streams.Kafka</RepositoryUrl>
+    <RepositoryUrl>https://github.com/jonathansant/Orleans.Persistence.Redis</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
@@ -26,6 +26,5 @@
 
   <!-- Shared Package Versions -->
   <PropertyGroup>
-    <StreamUtilsVersion>4.*</StreamUtilsVersion>
   </PropertyGroup>
 </Project>
