@@ -2,12 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>Sucrose.Orleans.Persistence.Redis</PackageId>
+    <Product>Sucrose.Orleans.Persistence.Redis</Product>
+    <RepositoryUrl>https://github.com/jonathansant/Orleans.Persistence.Redis</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MessagePack" Version="1.7.3.4" />
     <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="2.2.4" />
-    <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.2" />
     <PackageReference Include="StackExchange.Redis" Version="2.0.571" />
     <PackageReference Include="System.Data.HashFunction.xxHash" Version="2.0.0" />
   </ItemGroup>

@@ -1,21 +1,20 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using Orleans.Hosting;
 using Orleans.Persistence.Redis.Config;
-using Orleans.Persistence.Redis.Serialization;
 using Orleans.TestingHost;
-using System;
+using StackExchange.Redis;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
+using static StackExchange.Redis.ConnectionMultiplexer;
 
 namespace Orleans.Persistence.Redis.E2E
 {
-	public class TestBase : IAsyncLifetime
+	public class TestBase<TSilo, TClient> : IAsyncLifetime
+		where TSilo : ISiloBuilderConfigurator, new()
+		where TClient : IClientBuilderConfigurator, new()
 	{
 		private short _noOfSilos;
-
-		public static Guid StreamGuid { get; } = Guid.Parse("20b5d2a3-9cce-4fec-8ee7-9869e88f77a7");
 
 		protected TestCluster Cluster { get; private set; }
 
@@ -29,8 +28,8 @@ namespace Orleans.Persistence.Redis.E2E
 		{
 			var builder = new TestClusterBuilder(_noOfSilos);
 
-			builder.AddSiloBuilderConfigurator<SiloBuilderConfigurator>();
-			builder.AddClientBuilderConfigurator<ClientBuilderConfigurator>();
+			builder.AddSiloBuilderConfigurator<TSilo>();
+			builder.AddClientBuilderConfigurator<TClient>();
 
 			Cluster = builder.Build();
 			Cluster.Deploy();
@@ -42,6 +41,19 @@ namespace Orleans.Persistence.Redis.E2E
 		{
 			ShutDown();
 			return Task.CompletedTask;
+		}
+
+		protected static async Task FlushDb()
+		{
+			using (var connection = await ConnectAsync(new ConfigurationOptions
+			{
+				EndPoints = { "localhost" },
+				AllowAdmin = true
+			}))
+			{
+				var server = connection.GetServer("localhost:6379");
+				await server.FlushAllDatabasesAsync();
+			}
 		}
 	}
 
@@ -64,14 +76,15 @@ namespace Orleans.Persistence.Redis.E2E
 					builder => builder.Configure(opts =>
 					{
 						opts.Servers = new List<string> { "localhost" };
-//						opts.PlainTextSerialization = true;
 					})
 				)
-				.UseRedisMessagePackSerializer("TestingProvider")
+				.AddRedisDefaultSerializer("TestingProvider")
+				.AddRedisDefaultHumanReadableSerializer("TestingProvider")
 				.AddRedisGrainStorage("TestingProvider2",
 					builder => builder.Configure(opts => opts.Servers = new List<string> { "127.0.0.1" })
 				)
-				.UseRedisJsonSerializer("TestingProvider2", new JsonSerializerSettings())
+				.AddRedisDefaultSerializer("TestingProvider2")
+				.AddRedisDefaultHumanReadableSerializer("TestingProvider2")
 				.AddSimpleMessageStreamProvider("TestStream")
 				.AddMemoryGrainStorage("PubSubStore")
 		;

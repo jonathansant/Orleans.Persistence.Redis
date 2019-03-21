@@ -7,6 +7,6 @@ namespace Orleans.Persistence.Redis.Config
 		public IEnumerable<string> Servers { get; set; }
 		public int Database { get; set; }
 		public bool ThrowExceptionOnInconsistentETag { get; set; } = true;
-		public bool PlainTextSerialization { get; set; }
+		public bool HumanReadableSerialization { get; set; }
 	}
 }

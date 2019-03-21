@@ -1,8 +1,8 @@
 {
-  "name": "orleans.streams.kafka",
-  "version": "0.7.1",
-  "description": "Orleans Kafka Stream Provider",
-  "solution": "Orleans.Streams.Kafka-build.sln",
+  "name": "sucrose.orleans.persistence.redis",
+  "version": "0.1.0",
+  "description": "Orleans Redis Persistence Provider",
+  "solution": "Orleans.Persistence.Redis-build.sln",
   "dependencies": {},
   "devDependencies": {},
   "scripts": {}

@@ -1,12 +1,10 @@
 ﻿using Orleans.Streams;
-using StackExchange.Redis;
 using System.Threading.Tasks;
 using Xunit;
-using static StackExchange.Redis.ConnectionMultiplexer;
 
 namespace Orleans.Persistence.Redis.E2E
 {
-	public class RedisTests : TestBase
+	public class RedisTests : TestBase<SiloBuilderConfigurator, ClientBuilderConfigurator>
 	{
 		public RedisTests()
 		{
@@ -30,7 +28,7 @@ namespace Orleans.Persistence.Redis.E2E
 			var done = new TaskCompletionSource<bool>();
 
 			var provider = Cluster.Client.GetStreamProvider("TestStream");
-			var stream = provider.GetStream<string>(StreamGuid, "deactivate-notifications");
+			var stream = provider.GetStream<string>(Consts.StreamGuid, "deactivate-notifications");
 			await stream.SubscribeAsync((message, seq) =>
 			{
 				done.SetResult(true);
@@ -63,7 +61,7 @@ namespace Orleans.Persistence.Redis.E2E
 			var done = new TaskCompletionSource<bool>();
 
 			var provider = Cluster.Client.GetStreamProvider("TestStream");
-			var stream = provider.GetStream<string>(StreamGuid, "deactivate-notifications");
+			var stream = provider.GetStream<string>(Consts.StreamGuid, "deactivate-notifications");
 			await stream.SubscribeAsync((message, seq) =>
 			{
 				done.SetResult(true);
@@ -89,7 +87,7 @@ namespace Orleans.Persistence.Redis.E2E
 		}
 
 		[Fact]
-		public async Task TestSecondProvider()
+		public async Task SecondProvider()
 		{
 			var grain = Cluster.GrainFactory.GetGrain<ITestGrain2>("a-key-for-the second-provider");
 			var mock = MockState.Generate();
@@ -98,19 +96,6 @@ namespace Orleans.Persistence.Redis.E2E
 
 			var state = await grain.GetTheState();
 			Assert.Equal(mock, state);
-		}
-
-		private static async Task FlushDb()
-		{
-			using (var connection = await ConnectAsync(new ConfigurationOptions
-			{
-				EndPoints = { "localhost" },
-				AllowAdmin = true
-			}))
-			{
-				var server = connection.GetServer("localhost:6379");
-				await server.FlushAllDatabasesAsync();
-			}
 		}
 	}
 }

@@ -11,16 +11,19 @@ namespace Orleans.Persistence.Redis.Core
 	{
 		private readonly DbConnection _connection;
 		private readonly ISerializer _serializer;
+		private readonly IHumanReadableSerializer _humanReadableSerializer;
 		private readonly RedisStorageOptions _options;
 
 		public GrainStateStore(
 			DbConnection connection,
 			RedisStorageOptions options,
-			ISerializer serializer
+			ISerializer serializer,
+			IHumanReadableSerializer humanReadableSerializer = null
 		)
 		{
 			_connection = connection;
 			_serializer = serializer;
+			_humanReadableSerializer = humanReadableSerializer;
 			_options = options;
 		}
 
@@ -30,8 +33,8 @@ namespace Orleans.Persistence.Redis.Core
 			if (!state.HasValue)
 				return null;
 
-			if (_options.PlainTextSerialization)
-				return (IGrainState)_serializer.Deserialize((string)state, stateType);
+			if (_options.HumanReadableSerialization)
+				return (IGrainState)_humanReadableSerializer.Deserialize(state, stateType);
 
 			return (IGrainState)_serializer.Deserialize((byte[])state, stateType);
 		}
@@ -46,8 +49,8 @@ namespace Orleans.Persistence.Redis.Core
 
 			grainState.ETag = grainState.State.ComputeHashSync();
 
-			if (_options.PlainTextSerialization)
-				await _connection.Database.StringSetAsync(grainId, _serializer.SerializeToString(grainState));
+			if (_options.HumanReadableSerialization)
+				await _connection.Database.StringSetAsync(grainId, _humanReadableSerializer.Serialize(grainState));
 			else
 				await _connection.Database.StringSetAsync(grainId, _serializer.Serialize(grainState));
 		}

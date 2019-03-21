@@ -38,7 +38,7 @@ namespace Orleans.Persistence.Redis.E2E
 		public override Task OnActivateAsync()
 		{
 			var provider = GetStreamProvider("TestStream");
-			_stream = provider.GetStream<string>(TestBase.StreamGuid, "deactivate-notifications");
+			_stream = provider.GetStream<string>(Consts.StreamGuid, "deactivate-notifications");
 
 			return Task.CompletedTask;
 		}
