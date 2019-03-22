@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
-    <PackageReference Include="Microsoft.Orleans.CodeGenerator.MSBuild" Version="2.2.4">
+    <PackageReference Include="Microsoft.Orleans.CodeGenerator.MSBuild" Version="2.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -17,9 +17,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Orleans.Core" Version="2.2.4" />
-    <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="2.2.4" />
-    <PackageReference Include="Microsoft.Orleans.TestingHost" Version="2.2.4" />
+    <PackageReference Include="Microsoft.Orleans.Core" Version="2.3.0" />
+    <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="2.3.0" />
+    <PackageReference Include="Microsoft.Orleans.TestingHost" Version="2.3.0" />
   </ItemGroup>
 
   <ItemGroup>
