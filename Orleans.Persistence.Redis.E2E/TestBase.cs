@@ -76,12 +76,19 @@ namespace Orleans.Persistence.Redis.E2E
 					builder => builder.Configure(opts =>
 					{
 						opts.Servers = new List<string> { "localhost" };
+						opts.ClientName = "testing";
+						opts.KeyPrefix = "prefix";
 					})
 				)
 				.AddRedisDefaultSerializer("TestingProvider")
 				.AddRedisDefaultHumanReadableSerializer("TestingProvider")
 				.AddRedisGrainStorage("TestingProvider2",
-					builder => builder.Configure(opts => opts.Servers = new List<string> { "127.0.0.1" })
+					builder => builder.Configure(opts =>
+					{
+						opts.Servers = new List<string> { "127.0.0.1" };
+						opts.ClientName = "testing";
+						opts.KeyPrefix = "prefix";
+					})
 				)
 				.AddRedisDefaultSerializer("TestingProvider2")
 				.AddRedisDefaultHumanReadableSerializer("TestingProvider2")

@@ -27,9 +27,21 @@ namespace Orleans.Persistence.Redis.Core
 		{
 			try
 			{
-				_connection = await ConnectionMultiplexer.ConnectAsync(
-					string.Join(",", _options.Servers)
-				);
+				var timeAllowedMilliseconds = (int)_options.MaxRetryElapsedTimeAllowedMilliseconds.TotalMilliseconds;
+				var config = new ConfigurationOptions
+				{
+					ReconnectRetryPolicy = new LinearRetry(timeAllowedMilliseconds),
+					ConnectRetry = _options.ConnectRetry,
+					Password = _options.Password,
+					ClientName = _options.ClientName
+				};
+
+				foreach (var host in _options.Servers)
+				{
+					config.EndPoints.Add(host);
+				}
+
+				_connection = await ConnectionMultiplexer.ConnectAsync(config);
 
 				Database = _connection.GetDatabase(_options.Database);
 			}

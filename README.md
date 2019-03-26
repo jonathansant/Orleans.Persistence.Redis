@@ -36,3 +36,7 @@ These are the configurable values that the `Orleans.Persistence.Redis`:
 - **HumanReadableSerialization** Specifies which type of serializer to use (Non-Human readable serialization is more performant). *Default value: false*
 - **ThrowExceptionOnInconsistentETag** Specifies whether the state is validated. *Default value: true*
 - **Database** Specifies which Redis database to use. *Default value: 0*
+- **ConnectRetry** The number of times the client will attempt to connect to the Redis server. *Default value: 25*
+- **Password** Password to authenticate with the server.
+- **KeyPrefix** a prefix that gets appended with every key. *Default value: ""*
+- **ClientName** The client's name.

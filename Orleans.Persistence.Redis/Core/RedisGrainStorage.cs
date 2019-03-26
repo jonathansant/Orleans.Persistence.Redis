@@ -28,8 +28,8 @@ namespace Orleans.Persistence.Redis.Core
 			_logger = logger;
 		}
 
-		public async Task Init(CancellationToken ct)
-			=> await _connection.Connect();
+		public Task Init(CancellationToken ct)
+			=> _connection.Connect();
 
 		public async Task ClearStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
 		{

@@ -29,34 +29,41 @@ namespace Orleans.Persistence.Redis.Core
 
 		public async Task<IGrainState> GetGrainState(string grainId, Type stateType)
 		{
-			var state = await _connection.Database.StringGetAsync(grainId);
+			var state = await _connection.Database.StringGetAsync(GetKey(grainId));
 			if (!state.HasValue)
 				return null;
 
 			if (_options.HumanReadableSerialization)
 				return (IGrainState)_humanReadableSerializer.Deserialize(state, stateType);
 
-			return (IGrainState)_serializer.Deserialize((byte[])state, stateType);
+			return (IGrainState)_serializer.Deserialize(state, stateType);
 		}
 
 		public async Task UpdateGrainState(string grainId, IGrainState grainState)
 		{
+			var key = GetKey(grainId);
+
 			if (_options.ThrowExceptionOnInconsistentETag)
 			{
-				var storedGrainState = await GetGrainState(grainId, grainState.GetType());
+				var storedGrainState = await GetGrainState(key, grainState.GetType());
 				ValidateETag(grainState.ETag, storedGrainState?.ETag, grainState.GetType().Name);
 			}
 
 			grainState.ETag = grainState.State.ComputeHashSync();
 
 			if (_options.HumanReadableSerialization)
-				await _connection.Database.StringSetAsync(grainId, _humanReadableSerializer.Serialize(grainState));
+				await _connection.Database.StringSetAsync(key, _humanReadableSerializer.Serialize(grainState));
 			else
-				await _connection.Database.StringSetAsync(grainId, _serializer.Serialize(grainState));
+				await _connection.Database.StringSetAsync(key, _serializer.Serialize(grainState));
 		}
 
 		public Task DeleteGrainState(string grainId, IGrainState grainState)
-			=> _connection.Database.KeyDeleteAsync(grainId);
+			=> _connection.Database.KeyDeleteAsync(GetKey(grainId));
+
+		private string GetKey(string grainId)
+			=> string.IsNullOrEmpty(_options.KeyPrefix)
+				? grainId
+				: $"{_options.KeyPrefix}-{grainId}";
 
 		private static void ValidateETag(string currentETag, string storedEtag, string typeName)
 		{

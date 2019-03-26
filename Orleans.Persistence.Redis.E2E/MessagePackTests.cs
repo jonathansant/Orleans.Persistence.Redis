@@ -61,6 +61,7 @@ namespace Orleans.Persistence.Redis.E2E
 						builder => builder.Configure(opts =>
 						{
 							opts.Servers = new List<string> { "localhost" };
+							opts.ClientName = "testing";
 						})
 					)
 					.AddRedisSerializer<MessagePackSerializer>("TestingProvider")

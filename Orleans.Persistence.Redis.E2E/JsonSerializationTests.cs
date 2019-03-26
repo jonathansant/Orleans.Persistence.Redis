@@ -62,6 +62,7 @@ namespace Orleans.Persistence.Redis.E2E
 						{
 							opts.Servers = new List<string> { "localhost" };
 							opts.HumanReadableSerialization = true;
+							opts.ClientName = "testing";
 						})
 					)
 					.AddRedisSerializer<MessagePackSerializer>("TestingProvider")
