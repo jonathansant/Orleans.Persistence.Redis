@@ -86,7 +86,7 @@ namespace Orleans.Persistence.Redis.E2E
 		public static MockState Generate()
 			=> new MockState
 			{
-				Name = string.Join(string.Empty, Enumerable.Range(0, 10).Aggregate(string.Empty, (s, i) => s += i)),
+				Name = string.Join(string.Empty, Enumerable.Range(0, 10).Aggregate(string.Empty, (s, i) => s += Rand.Next(10))),
 				NoHeads = Rand.Next(8)
 			};
 

@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Orleans.Hosting;
-using Orleans.Runtime;
+﻿using Newtonsoft.Json;
 using System;
 
 namespace Orleans.Persistence.Redis.Serialization

@@ -86,6 +86,24 @@ namespace Orleans.Persistence.Redis.E2E
 			Assert.Null(state);
 		}
 
+
+		[Fact]
+		public async Task MultipleWrites()
+		{
+			var grain = Cluster.GrainFactory.GetGrain<ITestGrain>("a-key-for-clearing-state");
+			var mock = MockState.Generate();
+
+			await grain.SaveMe(mock);
+			var state = await grain.GetTheState();
+			Assert.Equal(mock, state);
+
+			var mock2 = MockState.Generate();
+
+			await grain.SaveMe(mock2);
+			var state2 = await grain.GetTheState();
+			Assert.Equal(mock2, state2);
+		}
+
 		[Fact]
 		public async Task SecondProvider()
 		{

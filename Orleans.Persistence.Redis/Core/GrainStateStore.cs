@@ -45,7 +45,7 @@ namespace Orleans.Persistence.Redis.Core
 
 			if (_options.ThrowExceptionOnInconsistentETag)
 			{
-				var storedGrainState = await GetGrainState(key, grainState.GetType());
+				var storedGrainState = await GetGrainState(grainId, grainState.GetType());
 				ValidateETag(grainState.ETag, storedGrainState?.ETag, grainState.GetType().Name);
 			}
 
