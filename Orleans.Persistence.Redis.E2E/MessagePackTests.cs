@@ -57,15 +57,14 @@ namespace Orleans.Persistence.Redis.E2E
 				=> hostBuilder
 					.ConfigureApplicationParts(parts =>
 						parts.AddApplicationPart(typeof(ITestGrain).Assembly).WithReferences())
-					.AddRedisGrainStorage("TestingProvider",
-						builder => builder.Configure(opts =>
+					.AddRedisGrainStorage("TestingProvider")
+					.AddRedisSerializer<MessagePackSerializer>()
+					.Build(builder => builder.Configure(opts =>
 						{
 							opts.Servers = new List<string> { "localhost" };
 							opts.ClientName = "testing";
 						})
 					)
-					.AddRedisSerializer<MessagePackSerializer>("TestingProvider")
-					.AddRedisDefaultHumanReadableSerializer("TestingProvider")
 					.AddSimpleMessageStreamProvider("TestStream")
 					.AddMemoryGrainStorage("PubSubStore")
 			;

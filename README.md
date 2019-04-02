@@ -1,7 +1,7 @@
 # Orleans.Persistence.Redis
 Redis persistence for Microsoft Orleans with configurable serialization.
 
-[![NuGet version](https://badge.fury.io/nu/orleans.persistence.redis.svg)](https://badge.fury.io/nu/orleans.persistence.redis)
+[![NuGet version](https://badge.fury.io/nu/Sucrose.Orleans.Persistence.Redis.svg)](https://badge.fury.io/nu/Sucrose.Orleans.Persistence.Redis)
 
 ## Installation
 To start working with the `Orleans.Persistence.Redis` make sure you do the following steps:
@@ -17,15 +17,13 @@ public class SiloBuilderConfigurator : ISiloBuilderConfigurator
 	public void Configure(ISiloHostBuilder hostBuilder)
 		=> hostBuilder
 			.AddMemoryGrainStorage("PubSubStore")
-			.AddRedisGrainStorage("TestingProvider",
-				builder => builder.Configure(opts =>
+			.Build(builder => builder.Configure(opts =>
 				{
 					opts.Servers = new List<string> { "localhost" };
-					opts.HumanReadableSerialization = true;
+					opts.ClientName = "testing";
+					opts.KeyPrefix = "My-Key-Prefix";
 				})
 			)
-			.AddRedisSerializer<MessagePackSerializer>("TestingProvider")
-			.AddRedisDefaultHumanReadableSerializer("TestingProvider")
 }
 ```
 

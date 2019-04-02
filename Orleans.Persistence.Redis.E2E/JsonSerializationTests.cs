@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System;
+using Microsoft.Extensions.Configuration;
 using Orleans.Hosting;
 using Orleans.Persistence.Redis.Config;
 using Orleans.Persistence.Redis.Serialization;
@@ -57,16 +58,15 @@ namespace Orleans.Persistence.Redis.E2E
 				=> hostBuilder
 					.ConfigureApplicationParts(parts =>
 						parts.AddApplicationPart(typeof(ITestGrain).Assembly).WithReferences())
-					.AddRedisGrainStorage("TestingProvider",
-						builder => builder.Configure(opts =>
+					.AddRedisGrainStorage("TestingProvider")
+					.AddRedisHumanReadableSerializer<JsonSerializer>(Array.Empty<object>())
+					.Build(builder => builder.Configure(opts =>
 						{
 							opts.Servers = new List<string> { "localhost" };
-							opts.HumanReadableSerialization = true;
 							opts.ClientName = "testing";
+							opts.HumanReadableSerialization = true;
 						})
 					)
-					.AddRedisSerializer<MessagePackSerializer>("TestingProvider")
-					.AddRedisDefaultHumanReadableSerializer("TestingProvider")
 					.AddSimpleMessageStreamProvider("TestStream")
 					.AddMemoryGrainStorage("PubSubStore")
 			;

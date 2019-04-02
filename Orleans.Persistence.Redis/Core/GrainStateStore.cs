@@ -18,7 +18,7 @@ namespace Orleans.Persistence.Redis.Core
 			DbConnection connection,
 			RedisStorageOptions options,
 			ISerializer serializer,
-			IHumanReadableSerializer humanReadableSerializer = null
+			IHumanReadableSerializer humanReadableSerializer
 		)
 		{
 			_connection = connection;
@@ -42,11 +42,12 @@ namespace Orleans.Persistence.Redis.Core
 		public async Task UpdateGrainState(string grainId, IGrainState grainState)
 		{
 			var key = GetKey(grainId);
+			var stateType = grainState.GetType();
 
 			if (_options.ThrowExceptionOnInconsistentETag)
 			{
-				var storedGrainState = await GetGrainState(grainId, grainState.GetType());
-				ValidateETag(grainState.ETag, storedGrainState?.ETag, grainState.GetType().Name);
+				var storedGrainState = await GetGrainState(grainId, stateType);
+				ValidateETag(grainState.ETag, storedGrainState?.ETag, stateType.Name);
 			}
 
 			grainState.ETag = grainState.State.ComputeHashSync();
@@ -54,7 +55,7 @@ namespace Orleans.Persistence.Redis.Core
 			if (_options.HumanReadableSerialization)
 				await _connection.Database.StringSetAsync(key, _humanReadableSerializer.Serialize(grainState));
 			else
-				await _connection.Database.StringSetAsync(key, _serializer.Serialize(grainState));
+				await _connection.Database.StringSetAsync(key, _serializer.Serialize(grainState, stateType));
 		}
 
 		public Task DeleteGrainState(string grainId, IGrainState grainState)

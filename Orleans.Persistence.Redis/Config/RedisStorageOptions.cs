@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Microsoft.Extensions.Options;
+using Orleans.Hosting;
+using Orleans.Persistence.Redis.Serialization;
+using System;
 using System.Collections.Generic;
 
 namespace Orleans.Persistence.Redis.Config
@@ -14,5 +17,60 @@ namespace Orleans.Persistence.Redis.Config
 		public string Password { get; set; }
 		public string KeyPrefix { get; set; } = string.Empty;
 		public string ClientName { get; set; }
+	}
+
+	public class RedisStorageOptionsBuilder
+	{
+		private readonly ISiloHostBuilder _builder;
+		private readonly string _name;
+		private bool _humanSerializerAdded;
+		private bool _serializerAdded;
+
+		public RedisStorageOptionsBuilder(ISiloHostBuilder builder, string name)
+		{
+			_builder = builder;
+			_name = name;
+		}
+
+		public RedisStorageOptionsBuilder AddRedisSerializer<TSerializer>(params object[] settings)
+			where TSerializer : ISerializer
+		{
+			_builder.AddRedisSerializer<TSerializer>(_name, settings);
+			_serializerAdded = true;
+			return this;
+		}
+
+		public RedisStorageOptionsBuilder AddRedisHumanReadableSerializer<TSerializer>(params object[] settings)
+			where TSerializer : IHumanReadableSerializer
+		{
+			_builder.AddRedisHumanReadableSerializer<TSerializer>(_name, settings);
+			_humanSerializerAdded = true;
+			return this;
+		}
+		public RedisStorageOptionsBuilder AddDefaultRedisSerializer()
+		{
+			_builder.AddRedisDefaultSerializer(_name);
+			_serializerAdded = true;
+			return this;
+		}
+
+		public RedisStorageOptionsBuilder AddRedisDefaultHumanReadableSerializer()
+		{
+			_builder.AddRedisDefaultHumanReadableSerializer(_name);
+			_humanSerializerAdded = true;
+			return this;
+		}
+
+		public ISiloHostBuilder Build(Action<OptionsBuilder<RedisStorageOptions>> configureOptions)
+		{
+			if (!_serializerAdded)
+				_builder.AddRedisDefaultSerializer(_name);
+
+			if (!_humanSerializerAdded)
+				_builder.AddRedisDefaultHumanReadableSerializer(_name);
+
+			return _builder
+				.ConfigureServices(services => services.AddRedisGrainStorage(_name, configureOptions));
+		}
 	}
 }

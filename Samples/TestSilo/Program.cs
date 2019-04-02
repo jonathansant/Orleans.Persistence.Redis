@@ -34,7 +34,8 @@ namespace TestSilo
 				.ConfigureApplicationParts(parts =>
 					parts.AddApplicationPart(Assembly.Load("TestGrains")).WithReferences())
 				.ConfigureLogging(logging => logging.AddConsole())
-				.AddRedisGrainStorage("Test", optionsBuilder =>
+				.AddRedisGrainStorage("Test")
+				.Build(optionsBuilder =>
 				{
 					optionsBuilder.Configure(opts =>
 					{

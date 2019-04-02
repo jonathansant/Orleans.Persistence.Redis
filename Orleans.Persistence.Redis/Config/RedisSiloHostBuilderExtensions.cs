@@ -17,20 +17,18 @@ namespace Orleans.Persistence.Redis.Config
 {
 	public static class RedisSiloHostBuilderExtensions
 	{
-		public static ISiloHostBuilder AddRedisGrainStorage(
+		public static RedisStorageOptionsBuilder AddRedisGrainStorage(
 			this ISiloHostBuilder builder,
-			string name,
-			Action<OptionsBuilder<RedisStorageOptions>> configureOptions = null
+			string name
 		)
-			=> builder.ConfigureServices(services => services.AddRedisGrainStorage(name, configureOptions));
+			=> new RedisStorageOptionsBuilder(builder, name);
 
-		public static ISiloHostBuilder AddRedisGrainStorageAsDefault(
-			this ISiloHostBuilder builder,
-			Action<OptionsBuilder<RedisStorageOptions>> configureOptions = null
+		public static RedisStorageOptionsBuilder AddRedisGrainStorageAsDefault(
+			this ISiloHostBuilder builder
 		)
-			=> builder.AddRedisGrainStorage("Default", configureOptions);
+			=> builder.AddRedisGrainStorage("Default");
 
-		public static IServiceCollection AddRedisGrainStorage(
+		internal static IServiceCollection AddRedisGrainStorage(
 			this IServiceCollection services,
 			string name,
 			Action<OptionsBuilder<RedisStorageOptions>> configureOptions = null
@@ -49,10 +47,10 @@ namespace Orleans.Persistence.Redis.Config
 					=> (ILifecycleParticipant<ISiloLifecycle>)provider.GetRequiredServiceByName<IGrainStorage>(n));
 		}
 
-		public static ISiloHostBuilder AddRedisDefaultSerializer(this ISiloHostBuilder builder, string name, params object[] settings)
-			=> builder.AddRedisSerializer<OrleansSerializer>(name, settings);
+		internal static ISiloHostBuilder AddRedisDefaultSerializer(this ISiloHostBuilder builder, string name)
+			=> builder.AddRedisSerializer<OrleansSerializer>(name);
 
-		public static ISiloHostBuilder AddRedisDefaultHumanReadableSerializer(this ISiloHostBuilder builder, string name)
+		internal static ISiloHostBuilder AddRedisDefaultHumanReadableSerializer(this ISiloHostBuilder builder, string name)
 			=> builder.AddRedisHumanReadableSerializer<JsonSerializer>(
 				name,
 				new JsonSerializerSettings
@@ -66,14 +64,14 @@ namespace Orleans.Persistence.Redis.Config
 					ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
 				});
 
-		public static ISiloHostBuilder AddRedisSerializer<TSerializer>(this ISiloHostBuilder builder, string name, params object[] settings)
+		internal static ISiloHostBuilder AddRedisSerializer<TSerializer>(this ISiloHostBuilder builder, string name, params object[] settings)
 			where TSerializer : ISerializer
 			=> builder.ConfigureServices(services =>
 					services.AddSingletonNamedService<ISerializer>(name, (provider, n)
 						=> ActivatorUtilities.CreateInstance<TSerializer>(provider, settings))
 			);
 
-		public static ISiloHostBuilder AddRedisHumanReadableSerializer<TSerializer>(this ISiloHostBuilder builder, string name, params object[] settings)
+		internal static ISiloHostBuilder AddRedisHumanReadableSerializer<TSerializer>(this ISiloHostBuilder builder, string name, params object[] settings)
 			where TSerializer : IHumanReadableSerializer
 			=> builder.ConfigureServices(services =>
 				services.AddSingletonNamedService<IHumanReadableSerializer>(name, (provider, n)

@@ -12,7 +12,7 @@ namespace Orleans.Persistence.Redis.Serialization
 			_serializationManager = serializationManager;
 		}
 
-		public byte[] Serialize(object raw)
+		public byte[] Serialize(object raw, Type type)
 			=> _serializationManager.SerializeToByteArray(raw);
 
 		public object Deserialize(byte[] serializedData, Type type)

@@ -7,6 +7,9 @@ namespace Orleans.Persistence.Redis.Serialization
 	{
 		private readonly JsonSerializerSettings _settings;
 
+		public JsonSerializer()
+		{ }
+
 		public JsonSerializer(JsonSerializerSettings settings)
 		{
 			_settings = settings;
