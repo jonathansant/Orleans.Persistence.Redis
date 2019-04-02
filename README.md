@@ -16,7 +16,7 @@ public class SiloBuilderConfigurator : ISiloBuilderConfigurator
 {
 	public void Configure(ISiloHostBuilder hostBuilder)
 		=> hostBuilder
-			.AddMemoryGrainStorage("PubSubStore")
+			.AddRedisGrainStorage("TestingProvider")
 			.Build(builder => builder.Configure(opts =>
 				{
 					opts.Servers = new List<string> { "localhost" };
