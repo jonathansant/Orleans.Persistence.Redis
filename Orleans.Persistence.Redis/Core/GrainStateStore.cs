@@ -1,6 +1,6 @@
-﻿using Orleans.Persistence.Redis.Config;
+﻿using Orleans.Persistence.Redis.Utils;
+using Orleans.Persistence.Redis.Config;
 using Orleans.Persistence.Redis.Serialization;
-using Orleans.Persistence.Redis.Utils;
 using Orleans.Storage;
 using System;
 using System.Threading.Tasks;
@@ -34,9 +34,9 @@ namespace Orleans.Persistence.Redis.Core
 				return null;
 
 			if (_options.HumanReadableSerialization)
-				return (IGrainState)_humanReadableSerializer.Deserialize(state, stateType);
+				return (IGrainState) _humanReadableSerializer.Deserialize(state, stateType);
 
-			return (IGrainState)_serializer.Deserialize(state, stateType);
+			return (IGrainState) _serializer.Deserialize(state, stateType);
 		}
 
 		public async Task UpdateGrainState(string grainId, IGrainState grainState)

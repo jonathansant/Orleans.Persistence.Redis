@@ -1,16 +1,43 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Orleans.Hosting;
-using Orleans.Runtime;
+﻿using MessagePack;
+using MessagePack.Resolvers;
 using System;
+using static MessagePack.MessagePackSerializer;
 
 namespace Orleans.Persistence.Redis.Serialization
 {
 	public class MessagePackSerializer : ISerializer
 	{
-		public byte[] Serialize(object raw, Type type)
-			=> MessagePack.MessagePackSerializer.Typeless.Serialize(raw);
+		public byte[] Serialize(IGrainState raw, Type type)
+		{
+			var grainState = (IGrainState)raw;
+			var state = NonGeneric.Serialize(
+				grainState.State.GetType(),
+				grainState.State,
+				ContractlessStandardResolver.Instance
+			);
 
-		public object Deserialize(byte[] serializedData, Type type)
-			=> MessagePack.MessagePackSerializer.Typeless.Deserialize(serializedData);
+			var dao = new StateData
+			{
+				ETag = grainState.ETag,
+				State = state
+			};
+
+			return Serialize<StateData>(dao);
+		}
+
+		public IGrainState Deserialize(byte[] serializedData, Type type)
+		{
+			var dao = Deserialize<StateData>(serializedData);
+		}
+	}
+
+	[MessagePackObject]
+	public class StateData
+	{
+		[Key(0)]
+		public byte[] State { get; set; }
+
+		[Key(1)]
+		public string ETag { get; set; }
 	}
 }
