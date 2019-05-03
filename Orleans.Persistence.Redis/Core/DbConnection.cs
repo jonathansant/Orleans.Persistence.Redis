@@ -27,13 +27,17 @@ namespace Orleans.Persistence.Redis.Core
 		{
 			try
 			{
-				var timeAllowedMilliseconds = (int)_options.MaxRetryElapsedTimeAllowedMilliseconds.TotalMilliseconds;
+				var timeAllowedMilliseconds = (int)_options.MaxRetryElapsedTimeAllowedMilliseconds
+					.TotalMilliseconds;
+
 				var config = new ConfigurationOptions
 				{
 					ReconnectRetryPolicy = new LinearRetry(timeAllowedMilliseconds),
 					ConnectRetry = _options.ConnectRetry,
 					Password = _options.Password,
-					ClientName = _options.ClientName
+					ClientName = _options.ClientName,
+					Ssl = _options.UseSsl,
+					SslHost = _options.SslHost
 				};
 
 				foreach (var host in _options.Servers)
