@@ -17,6 +17,8 @@ namespace Orleans.Persistence.Redis.Config
 		public string Password { get; set; }
 		public string KeyPrefix { get; set; } = string.Empty;
 		public string ClientName { get; set; }
+		public bool UseSsl { get; set; }
+		public string SslHost { get; set; }
 	}
 
 	public class RedisStorageOptionsBuilder
