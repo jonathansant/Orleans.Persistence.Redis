@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Orleans.Configuration;
-using Orleans.Hosting;
+using Orleans.Persistence.Redis.Config;
 using Orleans.Persistence.Redis.Core;
 using Orleans.Persistence.Redis.Serialization;
 using Orleans.Providers;
@@ -13,20 +13,62 @@ using Orleans.Storage;
 using System;
 using JsonSerializer = Orleans.Persistence.Redis.Serialization.JsonSerializer;
 
-namespace Orleans.Persistence.Redis.Config
+// ReSharper disable once CheckNamespace
+namespace Orleans.Hosting
 {
-	public static class RedisSiloHostBuilderExtensions
+	public static class RedisSiloBuilderExtensions
 	{
 		public static RedisStorageOptionsBuilder AddRedisGrainStorage(
-			this ISiloHostBuilder builder,
+			this ISiloBuilder builder,
 			string name
-		)
-			=> new RedisStorageOptionsBuilder(builder, name);
+		) => new RedisStorageOptionsBuilder(builder, name);
 
 		public static RedisStorageOptionsBuilder AddRedisGrainStorageAsDefault(
+			this ISiloBuilder builder
+		) => builder.AddRedisGrainStorage("Default");
+
+		internal static ISiloBuilder AddRedisDefaultSerializer(this ISiloBuilder builder, string name)
+			=> builder.AddRedisSerializer<OrleansSerializer>(name);
+
+		internal static ISiloBuilder AddRedisDefaultHumanReadableSerializer(this ISiloBuilder builder, string name)
+			=> builder.AddRedisHumanReadableSerializer<JsonSerializer>(
+				name,
+				new JsonSerializerSettings
+				{
+					TypeNameHandling = TypeNameHandling.All,
+					PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+					DateFormatHandling = DateFormatHandling.IsoDateFormat,
+					DefaultValueHandling = DefaultValueHandling.Ignore,
+					MissingMemberHandling = MissingMemberHandling.Ignore,
+					NullValueHandling = NullValueHandling.Ignore,
+					ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
+				});
+
+		internal static ISiloBuilder AddRedisSerializer<TSerializer>(this ISiloBuilder builder, string name, params object[] settings)
+			where TSerializer : ISerializer
+			=> builder.ConfigureServices(services =>
+				services.AddSingletonNamedService<ISerializer>(name, (provider, n)
+					=> ActivatorUtilities.CreateInstance<TSerializer>(provider, settings))
+			);
+
+		internal static ISiloBuilder AddRedisHumanReadableSerializer<TSerializer>(this ISiloBuilder builder, string name, params object[] settings)
+			where TSerializer : IHumanReadableSerializer
+			=> builder.ConfigureServices(services =>
+				services.AddSingletonNamedService<IHumanReadableSerializer>(name, (provider, n)
+					=> ActivatorUtilities.CreateInstance<TSerializer>(provider, settings))
+			);
+	}
+
+	public static class RedisSiloHostBuilderExtensions
+	{
+		public static RedisStorageSiloHostBuilderOptionsBuilder AddRedisGrainStorage(
+			this ISiloHostBuilder builder,
+			string name
+		) => new RedisStorageSiloHostBuilderOptionsBuilder(builder, name);
+
+		public static RedisStorageSiloHostBuilderOptionsBuilder AddRedisGrainStorageAsDefault(
 			this ISiloHostBuilder builder
-		)
-			=> builder.AddRedisGrainStorage("Default");
+		) => builder.AddRedisGrainStorage("Default");
 
 		internal static IServiceCollection AddRedisGrainStorage(
 			this IServiceCollection services,

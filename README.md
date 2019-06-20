@@ -10,20 +10,20 @@ To start working with the `Orleans.Persistence.Redis` make sure you do the follo
 3. Install the `Orleans.Persistence.Redis` nuget from the nuget repository.
 4. Add to the Silo configuration the new persistence provider with the necessary parameters and the optional ones (if you wish). You can see what is configurable in `RedisGrainStorage` under [Configurable Values](#configurableValues).
 
-Example RedisGrainStorage configuration: 
+Example RedisGrainStorage configuration:
 ```CSharp
 public class SiloBuilderConfigurator : ISiloBuilderConfigurator
 {
-	public void Configure(ISiloHostBuilder hostBuilder)
-		=> hostBuilder
-			.AddRedisGrainStorage("TestingProvider")
-			.Build(builder => builder.Configure(opts =>
-				{
-					opts.Servers = new List<string> { "localhost" };
-					opts.ClientName = "testing";
-					opts.KeyPrefix = "My-Key-Prefix";
-				})
-			)
+  public void Configure(ISiloHostBuilder hostBuilder)
+    => hostBuilder
+      .AddRedisGrainStorage("TestingProvider")
+      .Build(builder => builder.Configure(opts =>
+        {
+          opts.Servers = new List<string> { "localhost" };
+          opts.ClientName = "testing";
+          opts.KeyPrefix = "My-Key-Prefix";
+        })
+      )
 }
 ```
 

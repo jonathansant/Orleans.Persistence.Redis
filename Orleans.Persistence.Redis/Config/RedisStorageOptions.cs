@@ -21,14 +21,69 @@ namespace Orleans.Persistence.Redis.Config
 		public string SslHost { get; set; }
 	}
 
-	public class RedisStorageOptionsBuilder
+	public class RedisStorageSiloHostBuilderOptionsBuilder
 	{
 		private readonly ISiloHostBuilder _builder;
-		private readonly string _name;
 		private bool _humanSerializerAdded;
 		private bool _serializerAdded;
+		private readonly string _name;
 
-		public RedisStorageOptionsBuilder(ISiloHostBuilder builder, string name)
+		public RedisStorageSiloHostBuilderOptionsBuilder(ISiloHostBuilder builder, string name)
+		{
+			_builder = builder;
+			_name = name;
+		}
+
+		public RedisStorageSiloHostBuilderOptionsBuilder AddRedisSerializer<TSerializer>(params object[] settings)
+			where TSerializer : ISerializer
+		{
+			_builder.AddRedisSerializer<TSerializer>(_name, settings);
+			_serializerAdded = true;
+			return this;
+		}
+
+		public RedisStorageSiloHostBuilderOptionsBuilder AddRedisHumanReadableSerializer<TSerializer>(params object[] settings)
+			where TSerializer : IHumanReadableSerializer
+		{
+			_builder.AddRedisHumanReadableSerializer<TSerializer>(_name, settings);
+			_humanSerializerAdded = true;
+			return this;
+		}
+		public RedisStorageSiloHostBuilderOptionsBuilder AddDefaultRedisSerializer()
+		{
+			_builder.AddRedisDefaultSerializer(_name);
+			_serializerAdded = true;
+			return this;
+		}
+
+		public RedisStorageSiloHostBuilderOptionsBuilder AddRedisDefaultHumanReadableSerializer()
+		{
+			_builder.AddRedisDefaultHumanReadableSerializer(_name);
+			_humanSerializerAdded = true;
+			return this;
+		}
+
+		public ISiloHostBuilder Build(Action<OptionsBuilder<RedisStorageOptions>> configureOptions)
+		{
+			if (!_serializerAdded)
+				_builder.AddRedisDefaultSerializer(_name);
+
+			if (!_humanSerializerAdded)
+				_builder.AddRedisDefaultHumanReadableSerializer(_name);
+
+			return _builder
+				.ConfigureServices(services => services.AddRedisGrainStorage(_name, configureOptions));
+		}
+	}
+
+	public class RedisStorageOptionsBuilder
+	{
+		private readonly ISiloBuilder _builder;
+		private bool _humanSerializerAdded;
+		private bool _serializerAdded;
+		private readonly string _name;
+
+		public RedisStorageOptionsBuilder(ISiloBuilder builder, string name)
 		{
 			_builder = builder;
 			_name = name;
@@ -63,7 +118,7 @@ namespace Orleans.Persistence.Redis.Config
 			return this;
 		}
 
-		public ISiloHostBuilder Build(Action<OptionsBuilder<RedisStorageOptions>> configureOptions)
+		public ISiloBuilder Build(Action<OptionsBuilder<RedisStorageOptions>> configureOptions)
 		{
 			if (!_serializerAdded)
 				_builder.AddRedisDefaultSerializer(_name);
