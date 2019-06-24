@@ -4,7 +4,6 @@
 
 - **builder:** add generic host support
 - **builder:** move namespace so `Orleans.Hosting`
-- **deps:** update orleans to 2.3.5
 
 ### BREAKING CHANGES
 
