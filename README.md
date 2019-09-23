@@ -7,7 +7,7 @@ Redis persistence for Microsoft Orleans with configurable serialization.
 To start working with the `Orleans.Persistence.Redis` make sure you do the following steps:
 
 1. Install Redis on a machine (or cluster) which you have access to.
-3. Install the `Orleans.Persistence.Redis` nuget from the nuget repository.
+3. Install the `Sucrose.Orleans.Persistence.Redis` nuget from the nuget repository.
 4. Add to the Silo configuration the new persistence provider with the necessary parameters and the optional ones (if you wish). You can see what is configurable in `RedisGrainStorage` under [Configurable Values](#configurableValues).
 
 Example RedisGrainStorage configuration:
