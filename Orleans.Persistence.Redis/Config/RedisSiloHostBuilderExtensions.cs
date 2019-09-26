@@ -2,16 +2,17 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using Orleans.Configuration;
 using Orleans.Persistence.Redis.Config;
 using Orleans.Persistence.Redis.Core;
 using Orleans.Persistence.Redis.Serialization;
 using Orleans.Providers;
 using Orleans.Runtime;
+using Orleans.Serialization;
 using Orleans.Storage;
 using System;
 using JsonSerializer = Orleans.Persistence.Redis.Serialization.JsonSerializer;
+using OrleansSerializer = Orleans.Persistence.Redis.Serialization.OrleansSerializer;
 
 // ReSharper disable once CheckNamespace
 namespace Orleans.Hosting
@@ -33,16 +34,13 @@ namespace Orleans.Hosting
 		internal static ISiloBuilder AddRedisDefaultHumanReadableSerializer(this ISiloBuilder builder, string name)
 			=> builder.AddRedisHumanReadableSerializer<JsonSerializer>(
 				name,
-				new JsonSerializerSettings
-				{
-					TypeNameHandling = TypeNameHandling.All,
-					PreserveReferencesHandling = PreserveReferencesHandling.Objects,
-					DateFormatHandling = DateFormatHandling.IsoDateFormat,
-					DefaultValueHandling = DefaultValueHandling.Ignore,
-					MissingMemberHandling = MissingMemberHandling.Ignore,
-					NullValueHandling = NullValueHandling.Ignore,
-					ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-				});
+				provider => new object[] {
+					OrleansJsonSerializer.GetDefaultSerializerSettings(
+						provider.GetRequiredService<ITypeResolver>(),
+						provider.GetRequiredService<IGrainFactory>()
+					)
+				}
+			);
 
 		internal static ISiloBuilder AddRedisSerializer<TSerializer>(this ISiloBuilder builder, string name, params object[] settings)
 			where TSerializer : ISerializer
@@ -56,6 +54,16 @@ namespace Orleans.Hosting
 			=> builder.ConfigureServices(services =>
 				services.AddSingletonNamedService<IHumanReadableSerializer>(name, (provider, n)
 					=> ActivatorUtilities.CreateInstance<TSerializer>(provider, settings))
+			);
+
+		internal static ISiloBuilder AddRedisHumanReadableSerializer<TSerializer>(
+			this ISiloBuilder builder,
+			string name,
+			Func<IServiceProvider, object[]> cfg
+		) where TSerializer : IHumanReadableSerializer
+			=> builder.ConfigureServices(services =>
+				services.AddSingletonNamedService<IHumanReadableSerializer>(name, (provider, n)
+					=> ActivatorUtilities.CreateInstance<TSerializer>(provider, cfg?.Invoke(provider)))
 			);
 	}
 
@@ -95,16 +103,13 @@ namespace Orleans.Hosting
 		internal static ISiloHostBuilder AddRedisDefaultHumanReadableSerializer(this ISiloHostBuilder builder, string name)
 			=> builder.AddRedisHumanReadableSerializer<JsonSerializer>(
 				name,
-				new JsonSerializerSettings
-				{
-					TypeNameHandling = TypeNameHandling.All,
-					PreserveReferencesHandling = PreserveReferencesHandling.Objects,
-					DateFormatHandling = DateFormatHandling.IsoDateFormat,
-					DefaultValueHandling = DefaultValueHandling.Ignore,
-					MissingMemberHandling = MissingMemberHandling.Ignore,
-					NullValueHandling = NullValueHandling.Ignore,
-					ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-				});
+				provider => new object[] {
+					OrleansJsonSerializer.GetDefaultSerializerSettings(
+						provider.GetRequiredService<ITypeResolver>(),
+						provider.GetRequiredService<IGrainFactory>()
+					)
+				}
+			);
 
 		internal static ISiloHostBuilder AddRedisSerializer<TSerializer>(this ISiloHostBuilder builder, string name, params object[] settings)
 			where TSerializer : ISerializer
@@ -118,6 +123,16 @@ namespace Orleans.Hosting
 			=> builder.ConfigureServices(services =>
 				services.AddSingletonNamedService<IHumanReadableSerializer>(name, (provider, n)
 					=> ActivatorUtilities.CreateInstance<TSerializer>(provider, settings))
+			);
+
+		internal static ISiloHostBuilder AddRedisHumanReadableSerializer<TSerializer>(
+			this ISiloHostBuilder builder,
+			string name,
+			Func<IServiceProvider, object[]> cfg
+		) where TSerializer : IHumanReadableSerializer
+			=> builder.ConfigureServices(services =>
+				services.AddSingletonNamedService<IHumanReadableSerializer>(name, (provider, n)
+					=> ActivatorUtilities.CreateInstance<TSerializer>(provider, cfg?.Invoke(provider)))
 			);
 
 		private static IGrainStorage CreateRedisStorage(IServiceProvider services, string name)

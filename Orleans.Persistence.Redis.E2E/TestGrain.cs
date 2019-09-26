@@ -26,7 +26,7 @@ namespace Orleans.Persistence.Redis.E2E
 			return Task.CompletedTask;
 		}
 
-		public Task DeleteState() 
+		public Task DeleteState()
 			=> ClearStateAsync();
 
 		public Task WriteNullToState()
@@ -59,6 +59,34 @@ namespace Orleans.Persistence.Redis.E2E
 		}
 	}
 
+	public class TestStreamerGrain : Grain, ITestStreamerGrain
+	{
+		public override async Task OnActivateAsync()
+		{
+			var provider = GetStreamProvider("TestStream");
+			var stream = provider.GetStream<int>(Consts.StreamGuid, "multi-notifications");
+
+			var handles = await stream.GetAllSubscriptionHandles();
+			if (handles?.Count > 0)
+			{
+				await handles.First().ResumeAsync(Handler);
+				return;
+			}
+
+			await stream.SubscribeAsync(Handler);
+
+			Task Handler(int msg, StreamSequenceToken seq) => Task.CompletedTask;
+		}
+
+		public Task Deactivate()
+		{
+			DeactivateOnIdle();
+			return Task.CompletedTask;
+		}
+
+		public Task Invoke() => Task.CompletedTask;
+	}
+
 	public interface ITestGrain : IGrainWithStringKey
 	{
 		Task<MockState> GetTheState();
@@ -72,6 +100,12 @@ namespace Orleans.Persistence.Redis.E2E
 	{
 		Task<MockState> GetTheState();
 		Task SaveMe(MockState mockState);
+	}
+
+	public interface ITestStreamerGrain : IGrainWithStringKey
+	{
+		Task Deactivate();
+		Task Invoke();
 	}
 
 	public class MockState

@@ -4,7 +4,7 @@ namespace Orleans.Persistence.Redis.Serialization
 {
 	public interface IHumanReadableSerializer
 	{
-		string Serialize(object raw);
+		string Serialize(object raw, Type type);
 		object Deserialize(string serializedData, Type type);
 	}
 
