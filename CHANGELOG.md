@@ -1,4 +1,14 @@
-﻿## [0.4.0](https://github.com/jonathansant/orleans.persistence.redis/compare/0.3.1...0.4.0) (2019-06-20)
+﻿## [0.5.0](https://github.com/jonathansant/orleans.persistence.redis/compare/0.4.0...0.5.0) (2019-09-26)
+
+### BUG FIXES
+
+- **pubsub:**  add OrleansJsonSerializer settings to json converter
+
+### BREAKING CHANGES
+
+- `IHumanReadableSerializer` add type parameter to the Deserialize
+
+## [0.4.0](https://github.com/jonathansant/orleans.persistence.redis/compare/0.3.1...0.4.0) (2019-06-20)
 
 ### Features
 

@@ -53,7 +53,7 @@ namespace Orleans.Persistence.Redis.Core
 			grainState.ETag = grainState.State.ComputeHashSync();
 
 			if (_options.HumanReadableSerialization)
-				await _connection.Database.StringSetAsync(key, _humanReadableSerializer.Serialize(grainState));
+				await _connection.Database.StringSetAsync(key, _humanReadableSerializer.Serialize(grainState, stateType));
 			else
 				await _connection.Database.StringSetAsync(key, _serializer.Serialize(grainState, stateType));
 		}

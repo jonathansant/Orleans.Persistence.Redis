@@ -1,19 +1,17 @@
-﻿using System;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Orleans.Hosting;
-using Orleans.Persistence.Redis.Config;
-using Orleans.Persistence.Redis.Serialization;
 using Orleans.Streams;
 using Orleans.TestingHost;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Orleans.Persistence.Redis.E2E
 {
-	public class JsonPackTests : TestBase<JsonPackTests.SiloBuilderConfigurator, JsonPackTests.ClientBuilderConfigurator>
+	public class JsonTests : TestBase<JsonTests.SiloBuilderConfigurator, JsonTests.ClientBuilderConfigurator>
 	{
-		public JsonPackTests()
+		public JsonTests()
 		{
 			Initialize(3);
 		}
@@ -59,16 +57,83 @@ namespace Orleans.Persistence.Redis.E2E
 					.ConfigureApplicationParts(parts =>
 						parts.AddApplicationPart(typeof(ITestGrain).Assembly).WithReferences())
 					.AddRedisGrainStorage("TestingProvider")
-					.AddRedisHumanReadableSerializer<JsonSerializer>(Array.Empty<object>())
+					.AddRedisDefaultHumanReadableSerializer()
 					.Build(builder => builder.Configure(opts =>
 						{
 							opts.Servers = new List<string> { "localhost" };
 							opts.ClientName = "testing";
 							opts.HumanReadableSerialization = true;
+							opts.KeyPrefix = "prefix-json";
 						})
 					)
 					.AddSimpleMessageStreamProvider("TestStream")
 					.AddMemoryGrainStorage("PubSubStore")
+			;
+		}
+	}
+
+	public class JsonPubSubTests : TestBase<JsonPubSubTests.SiloBuilderConfigurator, JsonPubSubTests.ClientBuilderConfigurator>
+	{
+		public JsonPubSubTests()
+		{
+			Initialize(1);
+		}
+
+		[Fact]
+		public async Task PubSub()
+		{
+			var grain = Cluster.GrainFactory.GetGrain<ITestStreamerGrain>("a-grain-that-will-pubsub-rendevos-streams");
+			await grain.Invoke();
+
+			var provider = Cluster.Client.GetStreamProvider("TestStream");
+			var stream = provider.GetStream<int>(Consts.StreamGuid, "multi-notifications");
+
+			for (var i = 0; i < 10; i++)
+			{
+				await stream.OnNextAsync(i);
+				if (i == 1)
+				{
+					var silo = Cluster.Silos.First();
+					await Cluster.RestartSiloAsync(silo);
+					await Task.Delay(10000);
+				}
+			}
+		}
+
+		public class ClientBuilderConfigurator : IClientBuilderConfigurator
+		{
+			public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)
+				=> clientBuilder
+					.ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(ITestGrain).Assembly).WithReferences())
+					.AddSimpleMessageStreamProvider("TestStream")
+			;
+		}
+
+		public class SiloBuilderConfigurator : ISiloBuilderConfigurator
+		{
+			public void Configure(ISiloHostBuilder hostBuilder)
+				=> hostBuilder
+					.ConfigureApplicationParts(parts =>
+						parts.AddApplicationPart(typeof(ITestGrain).Assembly).WithReferences())
+					.AddRedisGrainStorage("TestingProvider")
+					.AddRedisDefaultHumanReadableSerializer()
+					.Build(builder => builder.Configure(opts =>
+					{
+						opts.Servers = new List<string> { "localhost" };
+						opts.ClientName = "testing";
+						opts.HumanReadableSerialization = true;
+						opts.KeyPrefix = "prefix-json";
+					}))
+					.AddRedisGrainStorage("PubSubStore")
+					.AddRedisDefaultHumanReadableSerializer()
+					.Build(builder => builder.Configure(opts =>
+					{
+						opts.Servers = new List<string> { "localhost" };
+						opts.ClientName = "testing-pubsub";
+						opts.HumanReadableSerialization = true;
+						opts.KeyPrefix = "prefix-json-pubsub";
+					}))
+					.AddSimpleMessageStreamProvider("TestStream")
 			;
 		}
 	}

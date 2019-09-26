@@ -7,15 +7,14 @@ namespace Orleans.Persistence.Redis.Serialization
 	{
 		private readonly JsonSerializerSettings _settings;
 
-		public JsonSerializer()
-		{ }
-
-		public JsonSerializer(JsonSerializerSettings settings)
+		public JsonSerializer(
+			JsonSerializerSettings settings
+		)
 		{
 			_settings = settings;
 		}
 
-		public string Serialize(object raw)
+		public string Serialize(object raw, Type type)
 			=> JsonConvert.SerializeObject(raw, _settings);
 
 		public object Deserialize(string serializedData, Type type)
