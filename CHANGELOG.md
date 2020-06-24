@@ -1,4 +1,25 @@
-﻿## [0.5.0](https://github.com/jonathansant/orleans.persistence.redis/compare/0.4.0...0.5.0) (2019-09-26)
+﻿
+## [0.7.0](https://github.com/jonathansant/orleans.persistence.redis/compare/0.6.0...0.7.0) (2019-06-23)
+
+### Features
+
+- Update Orleans v3.2 & Redis v2.1.58
+
+### BREAKING CHANGES
+- Update Orleans v3.2
+- Update Redis v2.1.58
+- Update MessagePack v2.1.143
+
+## [0.6.0](https://github.com/jonathansant/orleans.persistence.redis/compare/0.5.0...0.6.0) (2019-10-25)
+
+### Features
+
+- Update Orleans v3.0 
+
+### BREAKING CHANGES
+- Update Orleans v3.0
+
+## [0.5.0](https://github.com/jonathansant/orleans.persistence.redis/compare/0.4.0...0.5.0) (2019-09-26)
 
 ### BUG FIXES
 
