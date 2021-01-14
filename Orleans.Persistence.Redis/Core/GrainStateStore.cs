@@ -75,7 +75,7 @@ namespace Orleans.Persistence.Redis.Core
 		{
 			var stateBytes = (byte[])serializedState;
 			var stateSize = ByteSize.FromBytes(stateBytes.Length);
-			var keySize = ByteSize.FromBytes(Encoding.Unicode.GetByteCount(key));
+			var keySize = ByteSize.FromBytes(Encoding.UTF8.GetByteCount(key));
 
 			if (stateSize.MebiBytes > _options.FieldSizeWarningThresholdInMb)
 				_logger.LogWarning(
