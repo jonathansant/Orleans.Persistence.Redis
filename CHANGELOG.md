@@ -1,4 +1,9 @@
-﻿
+﻿## [0.8.0](https://github.com/jonathansant/orleans.persistence.redis/compare/0.7.0...0.8.0) (2021-01-14)
+
+### Features
+
+- Log diagnostic message when state exceeds threshold size
+
 ## [0.7.0](https://github.com/jonathansant/orleans.persistence.redis/compare/0.6.0...0.7.0) (2019-06-23)
 
 ### Features

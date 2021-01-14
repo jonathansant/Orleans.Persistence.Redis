@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Orleans.Hosting;
-using Orleans.Persistence.Redis.Config;
 using Orleans.TestingHost;
 using StackExchange.Redis;
 using System.Collections.Generic;

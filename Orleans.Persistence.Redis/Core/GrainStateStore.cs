@@ -1,8 +1,12 @@
-﻿using Orleans.Persistence.Redis.Config;
+﻿using ByteSizeLib;
+using Microsoft.Extensions.Logging;
+using Orleans.Persistence.Redis.Config;
 using Orleans.Persistence.Redis.Serialization;
 using Orleans.Persistence.Redis.Utils;
 using Orleans.Storage;
+using StackExchange.Redis;
 using System;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Orleans.Persistence.Redis.Core
@@ -12,26 +16,32 @@ namespace Orleans.Persistence.Redis.Core
 		private readonly DbConnection _connection;
 		private readonly ISerializer _serializer;
 		private readonly IHumanReadableSerializer _humanReadableSerializer;
+		private readonly ILogger<GrainStateStore> _logger;
 		private readonly RedisStorageOptions _options;
 
 		public GrainStateStore(
 			DbConnection connection,
 			RedisStorageOptions options,
 			ISerializer serializer,
-			IHumanReadableSerializer humanReadableSerializer
+			IHumanReadableSerializer humanReadableSerializer,
+			ILogger<GrainStateStore> logger
 		)
 		{
 			_connection = connection;
 			_serializer = serializer;
 			_humanReadableSerializer = humanReadableSerializer;
+			_logger = logger;
 			_options = options;
 		}
 
 		public async Task<IGrainState> GetGrainState(string grainId, Type stateType)
 		{
-			var state = await _connection.Database.StringGetAsync(GetKey(grainId));
+			var key = GetKey(grainId);
+			var state = await _connection.Database.StringGetAsync(key);
 			if (!state.HasValue)
 				return null;
+
+			LogDiagnostics(key, state, OperationDirection.Read);
 
 			if (_options.HumanReadableSerialization)
 				return (IGrainState)_humanReadableSerializer.Deserialize(state, stateType);
@@ -52,10 +62,34 @@ namespace Orleans.Persistence.Redis.Core
 
 			grainState.ETag = grainState.State.ComputeHashSync();
 
-			if (_options.HumanReadableSerialization)
-				await _connection.Database.StringSetAsync(key, _humanReadableSerializer.Serialize(grainState, stateType));
-			else
-				await _connection.Database.StringSetAsync(key, _serializer.Serialize(grainState, stateType));
+			RedisValue serializedState = _options.HumanReadableSerialization
+				? _humanReadableSerializer.Serialize(grainState, stateType)
+				: _serializer.Serialize(grainState, stateType);
+
+			LogDiagnostics(key, serializedState, OperationDirection.Write);
+
+			await _connection.Database.StringSetAsync(key, serializedState);
+		}
+
+		private void LogDiagnostics(string key, RedisValue serializedState, OperationDirection direction)
+		{
+			var stateBytes = (byte[])serializedState;
+			var stateSize = ByteSize.FromBytes(stateBytes.Length);
+			var keySize = ByteSize.FromBytes(Encoding.Unicode.GetByteCount(key));
+
+			if (stateSize.MebiBytes > _options.FieldSizeWarningThresholdInMb)
+				_logger.LogWarning(
+					"Large grain state detected Direction: {direction} with size of: {size}mb",
+					direction,
+					stateSize.MebiBytes
+				);
+
+			if (keySize.MebiBytes > _options.FieldSizeWarningThresholdInMb)
+				_logger.LogWarning(
+					"Large key detected Direction: {direction} with size of: {size}mb",
+					direction,
+					stateSize.MebiBytes
+				);
 		}
 
 		public Task DeleteGrainState(string grainId, IGrainState grainState)
@@ -82,9 +116,15 @@ namespace Orleans.Persistence.Redis.Core
 
 		private static void ThrowInconsistentState(string currentETag, string storedEtag, string typeName)
 			=> throw new InconsistentStateException(
-				$"Inconsistent state detected while performing write operations for type:{typeName}.",
+				$"Inconsistent state detected while performing write operations for type: {typeName}.",
 				storedEtag,
 				currentETag
 			);
+	}
+
+	internal enum OperationDirection
+	{
+		Write,
+		Read
 	}
 }
