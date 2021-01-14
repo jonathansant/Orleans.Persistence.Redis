@@ -6,6 +6,7 @@ using Orleans.Persistence.Redis.Utils;
 using Orleans.Storage;
 using StackExchange.Redis;
 using System;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Orleans.Persistence.Redis.Core
@@ -35,11 +36,12 @@ namespace Orleans.Persistence.Redis.Core
 
 		public async Task<IGrainState> GetGrainState(string grainId, Type stateType)
 		{
-			var state = await _connection.Database.StringGetAsync(GetKey(grainId));
+			var key = GetKey(grainId);
+			var state = await _connection.Database.StringGetAsync(key);
 			if (!state.HasValue)
 				return null;
 
-			LogDiagnostics(state, OperationDirection.Read);
+			LogDiagnostics(key, state, OperationDirection.Read);
 
 			if (_options.HumanReadableSerialization)
 				return (IGrainState)_humanReadableSerializer.Deserialize(state, stateType);
@@ -64,21 +66,29 @@ namespace Orleans.Persistence.Redis.Core
 				? _humanReadableSerializer.Serialize(grainState, stateType)
 				: _serializer.Serialize(grainState, stateType);
 
-			LogDiagnostics(serializedState, OperationDirection.Write);
+			LogDiagnostics(key, serializedState, OperationDirection.Write);
 
 			await _connection.Database.StringSetAsync(key, serializedState);
 		}
 
-		private void LogDiagnostics(RedisValue serializedState, OperationDirection direction)
+		private void LogDiagnostics(string key, RedisValue serializedState, OperationDirection direction)
 		{
 			var stateBytes = (byte[])serializedState;
-			var size = ByteSize.FromBytes(stateBytes.Length);
+			var stateSize = ByteSize.FromBytes(stateBytes.Length);
+			var keySize = ByteSize.FromBytes(Encoding.Unicode.GetByteCount(key));
 
-			if (size.MebiBytes > _options.StateSizeWarningTresholdInMb)
+			if (stateSize.MebiBytes > _options.FieldSizeWarningTresholdInMb)
 				_logger.LogWarning(
 					"Large grain state detected Direction: {direction} with size of: {size}mb",
 					direction,
-					size.MebiBytes
+					stateSize.MebiBytes
+				);
+
+			if (keySize.MebiBytes > _options.FieldSizeWarningTresholdInMb)
+				_logger.LogWarning(
+					"Large key detected Direction: {direction} with size of: {size}mb",
+					direction,
+					stateSize.MebiBytes
 				);
 		}
 
