@@ -77,14 +77,14 @@ namespace Orleans.Persistence.Redis.Core
 			var stateSize = ByteSize.FromBytes(stateBytes.Length);
 			var keySize = ByteSize.FromBytes(Encoding.Unicode.GetByteCount(key));
 
-			if (stateSize.MebiBytes > _options.FieldSizeWarningTresholdInMb)
+			if (stateSize.MebiBytes > _options.FieldSizeWarningThresholdInMb)
 				_logger.LogWarning(
 					"Large grain state detected Direction: {direction} with size of: {size}mb",
 					direction,
 					stateSize.MebiBytes
 				);
 
-			if (keySize.MebiBytes > _options.FieldSizeWarningTresholdInMb)
+			if (keySize.MebiBytes > _options.FieldSizeWarningThresholdInMb)
 				_logger.LogWarning(
 					"Large key detected Direction: {direction} with size of: {size}mb",
 					direction,
