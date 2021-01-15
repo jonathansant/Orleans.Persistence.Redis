@@ -41,7 +41,7 @@ namespace Orleans.Persistence.Redis.Core
 			if (!state.HasValue)
 				return null;
 
-			LogDiagnostics(key, state, OperationDirection.Read);
+			LogDiagnostics(key, state, OperationDirection.Read, stateType);
 
 			if (_options.HumanReadableSerialization)
 				return (IGrainState)_humanReadableSerializer.Deserialize(state, stateType);
@@ -66,30 +66,9 @@ namespace Orleans.Persistence.Redis.Core
 				? _humanReadableSerializer.Serialize(grainState, stateType)
 				: _serializer.Serialize(grainState, stateType);
 
-			LogDiagnostics(key, serializedState, OperationDirection.Write);
+			LogDiagnostics(key, serializedState, OperationDirection.Write, stateType);
 
 			await _connection.Database.StringSetAsync(key, serializedState);
-		}
-
-		private void LogDiagnostics(string key, RedisValue serializedState, OperationDirection direction)
-		{
-			var stateBytes = (byte[])serializedState;
-			var stateSize = ByteSize.FromBytes(stateBytes.Length);
-			var keySize = ByteSize.FromBytes(Encoding.UTF8.GetByteCount(key));
-
-			if (stateSize.MebiBytes > _options.FieldSizeWarningThresholdInMb)
-				_logger.LogWarning(
-					"Large grain state detected Direction: {direction} with size of: {size}mb",
-					direction,
-					stateSize.MebiBytes
-				);
-
-			if (keySize.MebiBytes > _options.FieldSizeWarningThresholdInMb)
-				_logger.LogWarning(
-					"Large key detected Direction: {direction} with size of: {size}mb",
-					direction,
-					stateSize.MebiBytes
-				);
 		}
 
 		public Task DeleteGrainState(string grainId, IGrainState grainState)
@@ -120,6 +99,30 @@ namespace Orleans.Persistence.Redis.Core
 				storedEtag,
 				currentETag
 			);
+
+		private void LogDiagnostics(string key, RedisValue serializedState, OperationDirection direction, Type grainStateType)
+		{
+			var stateBytes = (byte[])serializedState;
+			var stateSize = ByteSize.FromBytes(stateBytes.Length);
+			var keySize = ByteSize.FromBytes(Encoding.UTF8.GetByteCount(key));
+
+			if (stateSize.MebiBytes > _options.FieldSizeWarningThresholdInMb)
+				_logger.LogWarning(
+					"Redis value exceeds threshold of {threshold}. Data Type: GrainState, Type: {grainStateType}, Direction: {direction}, with size of: {size}mb",
+					_options.FieldSizeWarningThresholdInMb,
+					grainStateType.Name,
+					direction,
+					Math.Round(stateSize.MebiBytes, 2)
+				);
+
+			if (keySize.MebiBytes > _options.FieldSizeWarningThresholdInMb)
+				_logger.LogWarning(
+					"Redis value exceeds threshold of {threshold}. Data Type: Key, Direction: {direction}, with size of: {size}mb",
+					_options.FieldSizeWarningThresholdInMb,
+					direction,
+					Math.Round(stateSize.MebiBytes, 2)
+				);
+		}
 	}
 
 	internal enum OperationDirection
