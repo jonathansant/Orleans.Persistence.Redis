@@ -19,7 +19,7 @@ namespace Orleans.Persistence.Redis.Config
 		public string ClientName { get; set; }
 		public bool UseSsl { get; set; }
 		public string SslHost { get; set; }
-		public float FieldSizeWarningThresholdInMb { get; set; } = 2;
+		public float FieldSizeWarningThresholdInMb { get; set; } = 50;
 	}
 
 	public class RedisStorageSiloHostBuilderOptionsBuilder

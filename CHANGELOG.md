@@ -1,4 +1,10 @@
-﻿## [1.0.0](https://github.com/jonathansant/orleans.persistence.redis/compare/0.8.1...1.0.0) (2021-01-15)
+﻿## [1.0.1](https://github.com/jonathansant/orleans.persistence.redis/compare/0.8.1...1.0.1) (2021-01-15)
+
+### Features
+
+- Improve type name logging
+
+## [1.0.0](https://github.com/jonathansant/orleans.persistence.redis/compare/0.8.1...1.0.0) (2021-01-15)
 
 ### Features
 
