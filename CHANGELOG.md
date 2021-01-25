@@ -1,4 +1,10 @@
-﻿## [1.0.1](https://github.com/jonathansant/orleans.persistence.redis/compare/0.8.1...1.0.1) (2021-01-15)
+﻿## [1.0.2](https://github.com/jonathansant/orleans.persistence.redis/compare/1.0.1...1.0.2) (2021-01-25)
+
+### Features
+
+- Improve the diagnostic message and include key
+
+## [1.0.1](https://github.com/jonathansant/orleans.persistence.redis/compare/1.0.0...1.0.1) (2021-01-15)
 
 ### Features
 
