@@ -108,19 +108,23 @@ namespace Orleans.Persistence.Redis.Core
 
 			if (stateSize.MebiBytes > _options.FieldSizeWarningThresholdInMb)
 				_logger.LogWarning(
-					"Redis value exceeds threshold of {threshold}mb. Data Type: GrainState, Type: {grainStateType}, Direction: {direction}, with size of: {size}mb",
+					"Redis value exceeds threshold {size}MB/{threshold}MB. Key: {redisKey}, Data Type: {dataType}, Type: {grainStateType}, Direction: {direction}",
+					Math.Round(stateSize.MebiBytes, 2),
 					_options.FieldSizeWarningThresholdInMb,
+					key,
+					"GrainState",
 					grainStateType.GetDemystifiedName(),
-					direction,
-					Math.Round(stateSize.MebiBytes, 2)
+					direction
 				);
 
 			if (keySize.MebiBytes > _options.FieldSizeWarningThresholdInMb)
 				_logger.LogWarning(
-					"Redis value exceeds threshold of {threshold}mb. Data Type: Key, Direction: {direction}, with size of: {size}mb",
+					"Redis value exceeds threshold {size}MB/{threshold}MB. Key: {redisKey}, Data Type: {dataType}, Direction: {direction}",
+					Math.Round(stateSize.MebiBytes, 2),
 					_options.FieldSizeWarningThresholdInMb,
-					direction,
-					Math.Round(stateSize.MebiBytes, 2)
+					key,
+					"Key",
+					direction
 				);
 		}
 	}
