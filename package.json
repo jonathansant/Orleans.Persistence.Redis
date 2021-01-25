@@ -1,6 +1,6 @@
 {
   "name": "sucrose.orleans.persistence.redis",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Orleans Redis Persistence Provider",
   "solution": "Orleans.Persistence.Redis-build.sln",
   "dependencies": {},

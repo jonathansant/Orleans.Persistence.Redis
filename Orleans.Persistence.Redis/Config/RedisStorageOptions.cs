@@ -20,6 +20,11 @@ namespace Orleans.Persistence.Redis.Config
 		public bool UseSsl { get; set; }
 		public string SslHost { get; set; }
 		public float FieldSizeWarningThresholdInMb { get; set; } = 50;
+
+		/// <summary>
+		/// Gets or sets the threshold warning timespan in order to log as warning.
+		/// </summary>
+		public TimeSpan ExecutionDurationWarnThreshold { get; set; } = TimeSpan.FromMilliseconds(400);
 	}
 
 	public class RedisStorageSiloHostBuilderOptionsBuilder

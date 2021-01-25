@@ -37,7 +37,10 @@ namespace Orleans.Persistence.Redis.Core
 		public async Task<IGrainState> GetGrainState(string grainId, Type stateType)
 		{
 			var key = GetKey(grainId);
-			var state = await _connection.Database.StringGetAsync(key);
+
+			RedisValue state = default;
+			await TimeAction(async () => state = await _connection.Database.StringGetAsync(key), key, OperationDirection.Read, stateType);
+
 			if (!state.HasValue)
 				return null;
 
@@ -68,11 +71,15 @@ namespace Orleans.Persistence.Redis.Core
 
 			LogDiagnostics(key, serializedState, OperationDirection.Write, stateType);
 
-			await _connection.Database.StringSetAsync(key, serializedState);
+			await TimeAction(() => _connection.Database.StringSetAsync(key, serializedState), key, OperationDirection.Read, stateType);
 		}
 
-		public Task DeleteGrainState(string grainId, IGrainState grainState)
-			=> _connection.Database.KeyDeleteAsync(GetKey(grainId));
+		public async Task DeleteGrainState(string grainId, IGrainState grainState)
+		{
+			var key = GetKey(grainId);
+			var stateType = grainState.GetType();
+			await TimeAction(() => _connection.Database.KeyDeleteAsync(key), key, OperationDirection.Delete, stateType);
+		}
 
 		private string GetKey(string grainId)
 			=> string.IsNullOrEmpty(_options.KeyPrefix)
@@ -100,8 +107,35 @@ namespace Orleans.Persistence.Redis.Core
 				currentETag
 			);
 
+		private async Task TimeAction(Func<Task> action, string key, OperationDirection direction, Type grainStateType)
+		{
+			if (!_logger.IsEnabled(LogLevel.Warning))
+			{
+				await action();
+				return;
+			}
+
+			var watch = ValueStopwatch.StartNew();
+
+			await action();
+
+			var stopwatchElapsed = watch.GetElapsedTime();
+			var threshold = _options.ExecutionDurationWarnThreshold;
+			if (_logger.IsEnabled(LogLevel.Warning) && stopwatchElapsed > threshold)
+				_logger.LogWarning(
+				"Redis operation took longer than threshold {elapsed:n0}ms/{thresholdDuration:n0}ms. Key: {redisKey}, Type: {grainStateType}, Direction: {direction}",
+				stopwatchElapsed.TotalMilliseconds,
+				threshold.TotalMilliseconds,
+				key,
+				grainStateType.GetDemystifiedName(),
+				direction
+			);
+		}
+
 		private void LogDiagnostics(string key, RedisValue serializedState, OperationDirection direction, Type grainStateType)
 		{
+			if (!_logger.IsEnabled(LogLevel.Warning))
+				return;
 			var stateBytes = (byte[])serializedState;
 			var stateSize = ByteSize.FromBytes(stateBytes.Length);
 			var keySize = ByteSize.FromBytes(Encoding.UTF8.GetByteCount(key));
@@ -132,6 +166,7 @@ namespace Orleans.Persistence.Redis.Core
 	internal enum OperationDirection
 	{
 		Write,
-		Read
+		Read,
+		Delete,
 	}
 }

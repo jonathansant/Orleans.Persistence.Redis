@@ -1,4 +1,10 @@
-﻿## [1.0.2](https://github.com/jonathansant/orleans.persistence.redis/compare/1.0.1...1.0.2) (2021-01-25)
+﻿## [1.0.3](https://github.com/jonathansant/orleans.persistence.redis/compare/1.0.2...1.0.3) (2021-01-25)
+
+### Features
+
+- Add timer diagnostic which takes long
+
+## [1.0.2](https://github.com/jonathansant/orleans.persistence.redis/compare/1.0.1...1.0.2) (2021-01-25)
 
 ### Features
 
