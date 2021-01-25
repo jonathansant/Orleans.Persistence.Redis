@@ -33,15 +33,15 @@ namespace Orleans.Persistence.Redis.Core
 
 		public async Task ClearStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
 		{
+			var primaryKey = grainReference.ToKeyString();
 			try
 			{
-				var primaryKey = grainReference.ToKeyString();
 				await _grainStateStore.DeleteGrainState(primaryKey, grainState);
 				grainState.Empty();
 			}
 			catch (Exception ex)
 			{
-				LogError("clearing", ex, grainType, grainReference, grainReference.ToKeyString());
+				LogError("clearing", ex, grainType, grainReference, primaryKey);
 				throw;
 			}
 		}
@@ -64,14 +64,15 @@ namespace Orleans.Persistence.Redis.Core
 
 		public async Task WriteStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
 		{
+			var primaryKey = grainReference.ToKeyString();
+
 			try
 			{
-				var primaryKey = grainReference.ToKeyString();
 				await _grainStateStore.UpdateGrainState(primaryKey, grainState);
 			}
 			catch (Exception ex)
 			{
-				LogError("writing", ex, grainType, grainReference, grainReference.ToKeyString());
+				LogError("writing", ex, grainType, grainReference, primaryKey);
 				throw;
 			}
 		}
@@ -93,10 +94,10 @@ namespace Orleans.Persistence.Redis.Core
 		private void LogError(string op, Exception ex, string grainType, GrainReference grainReference, string primaryKey)
 			=> _logger.LogError(
 				ex,
-				"Error {op} state: GrainType = {grainType} Pk = {primaryKey} GrainId = {grainId} from Database = {db}",
+				"Error {op} state. GrainType: {grainType}, PK: {primaryKey}, GrainId: {grainId} from Database: {db}",
 				op,
-				primaryKey,
 				grainType,
+				primaryKey,
 				grainReference,
 				_connection.Database
 			);
