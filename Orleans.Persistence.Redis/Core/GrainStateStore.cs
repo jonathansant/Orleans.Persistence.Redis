@@ -111,6 +111,7 @@ namespace Orleans.Persistence.Redis.Core
 					"Redis value exceeds threshold {size}MB/{threshold}MB. Key: {redisKey}, Data Type: {dataType}, Type: {grainStateType}, Direction: {direction}",
 					Math.Round(stateSize.MebiBytes, 2),
 					_options.FieldSizeWarningThresholdInMb,
+					key,
 					"GrainState",
 					grainStateType.GetDemystifiedName(),
 					direction
