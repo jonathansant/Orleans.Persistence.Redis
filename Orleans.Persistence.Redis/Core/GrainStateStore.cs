@@ -82,9 +82,13 @@ namespace Orleans.Persistence.Redis.Core
 		}
 
 		private string GetKey(string grainId)
-			=> string.IsNullOrEmpty(_options.KeyPrefix)
+		{
+			if (_options.KeyBuilder != null)
+				return _options.KeyBuilder(grainId);
+			return string.IsNullOrEmpty(_options.KeyPrefix)
 				? grainId
 				: $"{_options.KeyPrefix}-{grainId}";
+		}
 
 		private static void ValidateETag(string currentETag, string storedEtag, string typeName)
 		{

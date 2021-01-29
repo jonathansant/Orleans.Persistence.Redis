@@ -1,4 +1,10 @@
-﻿## [1.0.3](https://github.com/jonathansant/orleans.persistence.redis/compare/1.0.2...1.0.3) (2021-01-25)
+﻿## [1.1.0](https://github.com/jonathansant/orleans.persistence.redis/compare/1.0.3...1.1.0) (2021-01-29)
+
+### Features
+
+- Implement `RedisStorageOptions.WithKeyBuilder` which allows you to configure how the key will be built
+
+## [1.0.3](https://github.com/jonathansant/orleans.persistence.redis/compare/1.0.2...1.0.3) (2021-01-25)
 
 ### Features
 
