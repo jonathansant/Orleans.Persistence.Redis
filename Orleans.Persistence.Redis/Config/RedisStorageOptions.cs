@@ -21,10 +21,23 @@ namespace Orleans.Persistence.Redis.Config
 		public string SslHost { get; set; }
 		public float FieldSizeWarningThresholdInMb { get; set; } = 50;
 
+		internal Func<string, string> KeyBuilder { get; set; }
+
 		/// <summary>
 		/// Gets or sets the threshold warning timespan in order to log as warning.
 		/// </summary>
 		public TimeSpan ExecutionDurationWarnThreshold { get; set; } = TimeSpan.FromMilliseconds(400);
+
+		/// <summary>
+		/// Configures how the key for redis will be combined.
+		/// </summary>
+		/// <param name="keyBuilder">Function to configure. Should return the Key combined. NOTE: This will omit the KeyPrefix.</param>
+		/// <returns></returns>
+		public RedisStorageOptions WithKeyBuilder(Func<string, string> keyBuilder)
+		{
+			KeyBuilder = keyBuilder;
+			return this;
+		}
 	}
 
 	public class RedisStorageSiloHostBuilderOptionsBuilder
