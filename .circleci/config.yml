@@ -21,6 +21,8 @@ jobs:
           command: |
             SOLUTION=$(node -p "require('./package.json').solution")
 
+            export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+
             echo "restore packages"
             dotnet restore $SOLUTION /p:Configuration=Release
 
