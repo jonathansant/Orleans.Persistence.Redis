@@ -1,4 +1,16 @@
-﻿## [1.1.0](https://github.com/jonathansant/orleans.persistence.redis/compare/1.0.3...1.1.0) (2021-01-29)
+﻿## [1.2.1](https://github.com/jonathansant/orleans.persistence.redis/compare/1.2.0...1.2.1) (2021-07-12)
+
+### Fix
+
+- Do not alter keys in dictionary in default JSON serialization
+
+## [1.2.0](https://github.com/jonathansant/orleans.persistence.redis/compare/1.1.0...1.2.0) (2021-07-12)
+
+### Features
+
+- Expose `ServiceProvider` when configure serializers
+
+## [1.1.0](https://github.com/jonathansant/orleans.persistence.redis/compare/1.0.3...1.1.0) (2021-01-29)
 
 ### Features
 
