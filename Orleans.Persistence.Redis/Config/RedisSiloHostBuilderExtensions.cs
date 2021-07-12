@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Serialization;
 using Orleans.Configuration;
 using Orleans.Persistence.Redis.Config;
 using Orleans.Persistence.Redis.Core;
@@ -103,13 +104,23 @@ namespace Orleans.Hosting
 		internal static ISiloHostBuilder AddRedisDefaultHumanReadableSerializer(this ISiloHostBuilder builder, string name)
 			=> builder.AddRedisHumanReadableSerializer<JsonSerializer>(
 				name,
-				provider => new object[] {
-					OrleansJsonSerializer.GetDefaultSerializerSettings(
+				provider =>
+				{
+					var settings = OrleansJsonSerializer.GetDefaultSerializerSettings(
 						provider.GetRequiredService<ITypeResolver>(),
 						provider.GetRequiredService<IGrainFactory>()
-					)
-				}
-			);
+					);
+
+					settings.ContractResolver = new DefaultContractResolver
+					{
+						NamingStrategy = new DefaultNamingStrategy
+						{
+							ProcessDictionaryKeys = false
+						}
+					};
+
+					return new object[] { settings };
+				});
 
 		internal static ISiloHostBuilder AddRedisSerializer<TSerializer>(this ISiloHostBuilder builder, string name, params object[] settings)
 			where TSerializer : ISerializer
