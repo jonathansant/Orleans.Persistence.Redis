@@ -68,6 +68,15 @@ namespace Orleans.Persistence.Redis.Config
 			_humanSerializerAdded = true;
 			return this;
 		}
+
+		public RedisStorageSiloHostBuilderOptionsBuilder AddRedisHumanReadableSerializer<TSerializer>(Func<IServiceProvider, object[]> cfg)
+			where TSerializer : IHumanReadableSerializer
+		{
+			_builder.AddRedisHumanReadableSerializer<TSerializer>(_name, cfg);
+			_humanSerializerAdded = true;
+			return this;
+		}
+
 		public RedisStorageSiloHostBuilderOptionsBuilder AddDefaultRedisSerializer()
 		{
 			_builder.AddRedisDefaultSerializer(_name);
@@ -116,6 +125,14 @@ namespace Orleans.Persistence.Redis.Config
 			return this;
 		}
 
+		public RedisStorageOptionsBuilder AddRedisSerializer<TSerializer>(Func<IServiceProvider, object[]> cfg)
+			where TSerializer : ISerializer
+		{
+			_builder.AddRedisSerializer<TSerializer>(_name, cfg);
+			_serializerAdded = true;
+			return this;
+		}
+
 		public RedisStorageOptionsBuilder AddRedisHumanReadableSerializer<TSerializer>(params object[] settings)
 			where TSerializer : IHumanReadableSerializer
 		{
@@ -123,6 +140,15 @@ namespace Orleans.Persistence.Redis.Config
 			_humanSerializerAdded = true;
 			return this;
 		}
+
+		public RedisStorageOptionsBuilder AddRedisHumanReadableSerializer<TSerializer>(Func<IServiceProvider, object[]> cfg)
+			where TSerializer : IHumanReadableSerializer
+		{
+			_builder.AddRedisHumanReadableSerializer<TSerializer>(_name, cfg);
+			_humanSerializerAdded = true;
+			return this;
+		}
+
 		public RedisStorageOptionsBuilder AddDefaultRedisSerializer()
 		{
 			_builder.AddRedisDefaultSerializer(_name);
