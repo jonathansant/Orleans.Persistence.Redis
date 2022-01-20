@@ -1,4 +1,10 @@
-﻿## [1.2.1](https://github.com/jonathansant/orleans.persistence.redis/compare/1.2.0...1.2.1) (2021-07-12)
+﻿## [1.2.2](https://github.com/jonathansant/orleans.persistence.redis/compare/1.2.1...1.2.2) (2022-01-20)
+
+### Fix
+
+- Align Default JsonSerializer settings across `ISiloHost` & `ISiloHostBuilderSettings` 
+
+## [1.2.1](https://github.com/jonathansant/orleans.persistence.redis/compare/1.2.0...1.2.1) (2021-07-12)
 
 ### Fix
 
@@ -60,6 +66,7 @@
 - Update Orleans v3.2 & Redis v2.1.58
 
 ### BREAKING CHANGES
+
 - Update Orleans v3.2
 - Update Redis v2.1.58
 - Update MessagePack v2.1.143
@@ -68,9 +75,10 @@
 
 ### Features
 
-- Update Orleans v3.0 
+- Update Orleans v3.0
 
 ### BREAKING CHANGES
+
 - Update Orleans v3.0
 
 ## [0.5.0](https://github.com/jonathansant/orleans.persistence.redis/compare/0.4.0...0.5.0) (2019-09-26)
