@@ -1,7 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Orleans.Configuration;
 using Orleans.Persistence.Redis.Config;
@@ -11,7 +13,6 @@ using Orleans.Providers;
 using Orleans.Runtime;
 using Orleans.Serialization;
 using Orleans.Storage;
-using System;
 using JsonSerializer = Orleans.Persistence.Redis.Serialization.JsonSerializer;
 using OrleansSerializer = Orleans.Persistence.Redis.Serialization.OrleansSerializer;
 
@@ -35,22 +36,25 @@ namespace Orleans.Hosting
 		internal static ISiloBuilder AddRedisDefaultHumanReadableSerializer(this ISiloBuilder builder, string name)
 			=> builder.AddRedisHumanReadableSerializer<JsonSerializer>(
 				name,
-				provider => new object[] {
-					OrleansJsonSerializer.GetDefaultSerializerSettings(
-						provider.GetRequiredService<ITypeResolver>(),
-						provider.GetRequiredService<IGrainFactory>()
-					)
-				}
+				provider => new object[] { RedisDefaultJsonSerializerSettings.Get(provider) }
 			);
 
-		internal static ISiloBuilder AddRedisSerializer<TSerializer>(this ISiloBuilder builder, string name, params object[] settings)
+		internal static ISiloBuilder AddRedisSerializer<TSerializer>(
+			this ISiloBuilder builder,
+			string name,
+			params object[] settings
+		)
 			where TSerializer : ISerializer
 			=> builder.ConfigureServices(services =>
 				services.AddSingletonNamedService<ISerializer>(name, (provider, n)
 					=> ActivatorUtilities.CreateInstance<TSerializer>(provider, settings))
 			);
 
-		internal static ISiloBuilder AddRedisHumanReadableSerializer<TSerializer>(this ISiloBuilder builder, string name, params object[] settings)
+		internal static ISiloBuilder AddRedisHumanReadableSerializer<TSerializer>(
+			this ISiloBuilder builder,
+			string name,
+			params object[] settings
+		)
 			where TSerializer : IHumanReadableSerializer
 			=> builder.ConfigureServices(services =>
 				services.AddSingletonNamedService<IHumanReadableSerializer>(name, (provider, n)
@@ -89,47 +93,35 @@ namespace Orleans.Hosting
 			// services.AddTransient<IConfigurationValidator>(sp => new DynamoDBGrainStorageOptionsValidator(sp.GetService<IOptionsSnapshot<RedisStorageOptions>>().Get(name), name));
 			services.AddSingletonNamedService(name, CreateStateStore);
 			services.ConfigureNamedOptionForLogging<RedisStorageOptions>(name);
-			services.TryAddSingleton(sp => sp.GetServiceByName<IGrainStorage>(ProviderConstants.DEFAULT_STORAGE_PROVIDER_NAME));
+			services.TryAddSingleton(sp =>
+				sp.GetServiceByName<IGrainStorage>(ProviderConstants.DEFAULT_STORAGE_PROVIDER_NAME));
 
 			return services
 				.AddSingletonNamedService(name, CreateDbConnection)
 				.AddSingletonNamedService(name, CreateRedisStorage)
 				.AddSingletonNamedService(name, (provider, n)
-					=> (ILifecycleParticipant<ISiloLifecycle>)provider.GetRequiredServiceByName<IGrainStorage>(n));
+					=> (ILifecycleParticipant<ISiloLifecycle>) provider.GetRequiredServiceByName<IGrainStorage>(n));
 		}
 
 		internal static ISiloHostBuilder AddRedisDefaultSerializer(this ISiloHostBuilder builder, string name)
 			=> builder.AddRedisSerializer<OrleansSerializer>(name);
 
-		internal static ISiloHostBuilder AddRedisDefaultHumanReadableSerializer(this ISiloHostBuilder builder, string name)
+		internal static ISiloHostBuilder AddRedisDefaultHumanReadableSerializer(this ISiloHostBuilder builder,
+			string name)
 			=> builder.AddRedisHumanReadableSerializer<JsonSerializer>(
 				name,
-				provider =>
-				{
-					var settings = OrleansJsonSerializer.GetDefaultSerializerSettings(
-						provider.GetRequiredService<ITypeResolver>(),
-						provider.GetRequiredService<IGrainFactory>()
-					);
+				provider => new object[] { RedisDefaultJsonSerializerSettings.Get(provider) });
 
-					settings.ContractResolver = new DefaultContractResolver
-					{
-						NamingStrategy = new DefaultNamingStrategy
-						{
-							ProcessDictionaryKeys = false
-						}
-					};
-
-					return new object[] { settings };
-				});
-
-		internal static ISiloHostBuilder AddRedisSerializer<TSerializer>(this ISiloHostBuilder builder, string name, params object[] settings)
+		internal static ISiloHostBuilder AddRedisSerializer<TSerializer>(this ISiloHostBuilder builder, string name,
+			params object[] settings)
 			where TSerializer : ISerializer
 			=> builder.ConfigureServices(services =>
-					services.AddSingletonNamedService<ISerializer>(name, (provider, n)
-						=> ActivatorUtilities.CreateInstance<TSerializer>(provider, settings))
+				services.AddSingletonNamedService<ISerializer>(name, (provider, n)
+					=> ActivatorUtilities.CreateInstance<TSerializer>(provider, settings))
 			);
 
-		internal static ISiloHostBuilder AddRedisHumanReadableSerializer<TSerializer>(this ISiloHostBuilder builder, string name, params object[] settings)
+		internal static ISiloHostBuilder AddRedisHumanReadableSerializer<TSerializer>(this ISiloHostBuilder builder,
+			string name, params object[] settings)
 			where TSerializer : IHumanReadableSerializer
 			=> builder.ConfigureServices(services =>
 				services.AddSingletonNamedService<IHumanReadableSerializer>(name, (provider, n)
@@ -173,6 +165,27 @@ namespace Orleans.Hosting
 			var optionsSnapshot = provider.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
 			var logger = provider.GetRequiredService<ILogger<DbConnection>>();
 			return ActivatorUtilities.CreateInstance<DbConnection>(provider, optionsSnapshot.Get(name), logger);
+		}
+	}
+
+	public static class RedisDefaultJsonSerializerSettings
+	{
+		internal static JsonSerializerSettings Get(IServiceProvider provider)
+		{
+			var settings = OrleansJsonSerializer.GetDefaultSerializerSettings(
+				provider.GetRequiredService<ITypeResolver>(),
+				provider.GetRequiredService<IGrainFactory>()
+			);
+
+			settings.ContractResolver = new DefaultContractResolver
+			{
+				NamingStrategy = new DefaultNamingStrategy
+				{
+					ProcessDictionaryKeys = false
+				}
+			};
+
+			return settings;
 		}
 	}
 }
