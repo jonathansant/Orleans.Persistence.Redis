@@ -37,7 +37,9 @@ namespace Orleans.Persistence.Redis.Core
 					Password = _options.Password,
 					ClientName = _options.ClientName,
 					Ssl = _options.UseSsl,
-					SslHost = _options.SslHost
+					SslHost = _options.SslHost,
+					AsyncTimeout = (int)_options.CommandTimeout.TotalMilliseconds,
+					SyncTimeout = (int)_options.CommandTimeout.TotalMilliseconds
 				};
 
 				foreach (var host in _options.Servers)

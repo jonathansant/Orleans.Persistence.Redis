@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,6 +12,7 @@ using Orleans.Providers;
 using Orleans.Runtime;
 using Orleans.Serialization;
 using Orleans.Storage;
+using System;
 using JsonSerializer = Orleans.Persistence.Redis.Serialization.JsonSerializer;
 using OrleansSerializer = Orleans.Persistence.Redis.Serialization.OrleansSerializer;
 
@@ -100,7 +100,7 @@ namespace Orleans.Hosting
 				.AddSingletonNamedService(name, CreateDbConnection)
 				.AddSingletonNamedService(name, CreateRedisStorage)
 				.AddSingletonNamedService(name, (provider, n)
-					=> (ILifecycleParticipant<ISiloLifecycle>) provider.GetRequiredServiceByName<IGrainStorage>(n));
+					=> (ILifecycleParticipant<ISiloLifecycle>)provider.GetRequiredServiceByName<IGrainStorage>(n));
 		}
 
 		internal static ISiloHostBuilder AddRedisDefaultSerializer(this ISiloHostBuilder builder, string name)
@@ -170,7 +170,7 @@ namespace Orleans.Hosting
 
 	public static class RedisDefaultJsonSerializerSettings
 	{
-		internal static JsonSerializerSettings Get(IServiceProvider provider)
+		public static JsonSerializerSettings Get(IServiceProvider provider)
 		{
 			var settings = OrleansJsonSerializer.GetDefaultSerializerSettings(
 				provider.GetRequiredService<ITypeResolver>(),
