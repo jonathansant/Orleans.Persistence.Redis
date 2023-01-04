@@ -19,5 +19,11 @@ namespace Orleans.Persistence.Redis.Serialization
 
 		public object Deserialize(string serializedData, Type type)
 			=> JsonConvert.DeserializeObject(serializedData, type, _settings);
+
+		public string Serialize<T>(T raw)
+			=> JsonConvert.SerializeObject(raw);
+
+		public T Deserialize<T>(string serializedData)
+			=> JsonConvert.DeserializeObject<T>(serializedData);
 	}
 }

@@ -6,11 +6,19 @@ using Orleans.Persistence.Redis.Utils;
 using Orleans.Storage;
 using StackExchange.Redis;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Orleans.Persistence.Redis.Core
 {
+	internal class Segments
+	{
+		public int NoOfSegments { get; set; }
+	}
+
 	internal class GrainStateStore : IGrainStateStore
 	{
 		private readonly DbConnection _connection;
@@ -39,7 +47,15 @@ namespace Orleans.Persistence.Redis.Core
 			var key = GetKey(grainId);
 
 			RedisValue state = default;
-			await TimeAction(async () => state = await _connection.Database.StringGetAsync(key), key, OperationDirection.Read, stateType);
+
+			if (_options.HumanReadableSerialization && _options.SegmentSize.HasValue)
+			{
+				await TimeAction(async () => state = await ReadSegments(key), key, OperationDirection.Read, stateType);
+			}
+			else
+			{
+				await TimeAction(async () => state = await _connection.Database.StringGetAsync(key), key, OperationDirection.Read, stateType);
+			}
 
 			if (!state.HasValue)
 				return null;
@@ -64,6 +80,12 @@ namespace Orleans.Persistence.Redis.Core
 			}
 
 			grainState.ETag = grainState.State.ComputeHashSync();
+
+			if (_options.HumanReadableSerialization && _options.SegmentSize.HasValue)
+			{
+				await SaveSegments(key, grainState, stateType);
+				return;
+			}
 
 			RedisValue serializedState = _options.HumanReadableSerialization
 				? _humanReadableSerializer.Serialize(grainState, stateType)
@@ -136,6 +158,31 @@ namespace Orleans.Persistence.Redis.Core
 			);
 		}
 
+		private async Task TimeAction(Func<List<Task>> action, string key, OperationDirection direction, Type grainStateType)
+		{
+			if (!_logger.IsEnabled(LogLevel.Warning))
+			{
+				await Task.WhenAll(action());
+				return;
+			}
+
+			var watch = ValueStopwatch.StartNew();
+
+			await Task.WhenAll(action());
+
+			var stopwatchElapsed = watch.GetElapsedTime();
+			var threshold = _options.ExecutionDurationWarnThreshold;
+			if (_logger.IsEnabled(LogLevel.Warning) && stopwatchElapsed > threshold)
+				_logger.LogWarning(
+					"Redis operation took longer than threshold {elapsed:n0}ms/{thresholdDuration:n0}ms. Key: {redisKey}, Type: {grainStateType}, Direction: {direction}",
+					stopwatchElapsed.TotalMilliseconds,
+					threshold.TotalMilliseconds,
+					key,
+					grainStateType.GetDemystifiedName(),
+					direction
+				);
+		}
+
 		private void LogDiagnostics(string key, RedisValue serializedState, OperationDirection direction, Type grainStateType)
 		{
 			if (!_logger.IsEnabled(LogLevel.Warning))
@@ -164,6 +211,94 @@ namespace Orleans.Persistence.Redis.Core
 					"Key",
 					direction
 				);
+		}
+
+		private async Task<string> ReadSegments(string key)
+		{
+			if (!await _connection.Database.KeyExistsAsync(key))
+			{
+				return null;
+			}
+
+			if (_options.DeleteOldSegments)
+			{
+				var max = _options.SegmentSize!.Value;
+				var entries = await _connection.Database.HashGetAllAsync(key);
+				var n = entries.Sum(x => x.Value.Length());
+				var buffer = new byte[n];
+
+				foreach (var o in entries)
+				{
+					var index = int.Parse(Regex.Match(o.Name!, @"^Segment(\d+)$").Groups[1].Value);
+					var temp = Encoding.UTF8.GetBytes(o.Value!);
+					Array.Copy(temp, 0, buffer, index * max, temp.Length);
+				}
+
+				return Encoding.UTF8.GetString(buffer);
+			}
+
+			var list = new List<Task<RedisValue>>();
+			var segments = _humanReadableSerializer.Deserialize<Segments>(await _connection.Database.HashGetAsync(key, "Total"));
+
+			for (var i = 0; i < segments.NoOfSegments; i++)
+			{
+				list.Add(_connection.Database.HashGetAsync(key, $"Segment{i}"));
+			}
+
+			var results = await Task.WhenAll(list.ToArray());
+			var sb = new StringBuilder();
+			foreach (var r in results)
+			{
+				sb.Append(r);
+			}
+
+			return sb.ToString();
+		}
+
+		private async Task SaveSegments(string key, IGrainState grainState, Type stateType)
+		{
+			var max = _options.SegmentSize!.Value;
+			var entries = new List<HashEntry>();
+			var segment = 0;
+			RedisValue serializedState = _humanReadableSerializer.Serialize(grainState, stateType);
+			var tmp = serializedState.ToString();
+			while (tmp.Length > max)
+			{
+				entries.Add(new HashEntry($"Segment{segment}", tmp.Substring(0, max)));
+				segment++;
+				tmp = tmp.Substring(max);
+			}
+
+			if (tmp.Length != 0)
+			{
+				entries.Add(new HashEntry($"Segment{segment}", tmp));
+				segment++;
+			}
+
+			if (!_options.DeleteOldSegments)
+			{
+				entries.Add(new HashEntry("Total", _humanReadableSerializer.Serialize(
+					new Segments()
+					{
+						NoOfSegments = segment
+					},
+					typeof(Segments))));
+				await TimeAction(() => _connection.Database.HashSetAsync(key, entries.ToArray()), key, OperationDirection.Read, stateType);
+				return;
+			}
+
+			var pending = new List<Task>
+			{
+				_connection.Database.HashSetAsync(key, entries.ToArray())
+			};
+
+			while (await _connection.Database.HashExistsAsync(key, $"Segment{segment}"))
+			{
+				pending.Add(_connection.Database.HashDeleteAsync(key, $"Segment{segment}"));
+				segment++;
+			}
+			await TimeAction(() => pending, key, OperationDirection.Read, stateType);
+			return;
 		}
 	}
 
