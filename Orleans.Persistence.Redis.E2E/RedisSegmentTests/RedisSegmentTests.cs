@@ -22,20 +22,28 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 			Initialize(3);
 		}
 
+
+		private async Task<string> Arrange()
+		{
+			await FlushDb();
+
+			// arrange
+			var dataGenerated = await GenerateData(10 * 10);
+			Assert.NotNull(dataGenerated);
+			return dataGenerated;
+		}
+
 		[Fact]
 		public async Task SegmentTest1()
 		{
 			try
 			{
-				await FlushDb();
+				var dataGenerated = await Arrange();
 				var original = new HashSet<string>();
 
-				// arrange
-				var dataGenerated = await GenerateData(10 * 10);
-				Assert.NotNull(dataGenerated);
-				original.Add(dataGenerated);
-
 				var grain = Cluster.GrainFactory.GetGrain<ITestGrainSegments>("segmentTest");
+
+				original.Add(dataGenerated);
 
 				// Act
 				await grain.AddData(new BigData()
@@ -79,16 +87,15 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 					.AddRedisGrainStorage("TestingProvider")
 					.AddRedisDefaultHumanReadableSerializer()
 					.Build(builder => builder.Configure(opts =>
-						{
-							opts.Servers = new List<string> { "localhost" };
-							opts.ClientName = "testing";
-							opts.HumanReadableSerialization = true;
-							opts.ThrowExceptionOnInconsistentETag = false;
-							opts.DeleteOldSegments = false;
-							opts.SegmentSize = 1024 * 1024;
-						})
-					)
-			;
+					{
+						opts.Servers = new List<string> { "localhost" };
+						opts.ClientName = "testing";
+						opts.HumanReadableSerialization = true;
+						opts.ThrowExceptionOnInconsistentETag = false;
+						opts.DeleteOldSegments = false;
+						opts.SegmentSize = 1024 * 1024;
+					}))
+				;
 		}
 		private static async Task<string> GenerateData(int n) // 100kb
 		{

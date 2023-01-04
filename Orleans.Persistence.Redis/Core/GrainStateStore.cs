@@ -48,7 +48,7 @@ namespace Orleans.Persistence.Redis.Core
 
 			RedisValue state = default;
 
-			if (_options.HumanReadableSerialization && _options.SegmentSize.HasValue)
+			if (_options.SegmentSize.HasValue)
 			{
 				await TimeAction(async () => state = await ReadSegments(key), key, OperationDirection.Read, stateType);
 			}
@@ -81,11 +81,12 @@ namespace Orleans.Persistence.Redis.Core
 
 			grainState.ETag = grainState.State.ComputeHashSync();
 
-			if (_options.HumanReadableSerialization && _options.SegmentSize.HasValue)
+			if (_options.SegmentSize.HasValue)
 			{
 				await SaveSegments(key, grainState, stateType);
 				return;
 			}
+
 
 			RedisValue serializedState = _options.HumanReadableSerialization
 				? _humanReadableSerializer.Serialize(grainState, stateType)
@@ -213,11 +214,11 @@ namespace Orleans.Persistence.Redis.Core
 				);
 		}
 
-		private async Task<string> ReadSegments(string key)
+		private async Task<RedisValue> ReadSegments(string key)
 		{
 			if (!await _connection.Database.KeyExistsAsync(key))
 			{
-				return null;
+				return default;
 			}
 
 			if (_options.DeleteOldSegments)
@@ -234,55 +235,67 @@ namespace Orleans.Persistence.Redis.Core
 					Array.Copy(temp, 0, buffer, index * max, temp.Length);
 				}
 
-				return Encoding.UTF8.GetString(buffer);
+				return buffer;
 			}
 
 			var list = new List<Task<RedisValue>>();
-			var segments = _humanReadableSerializer.Deserialize<Segments>(await _connection.Database.HashGetAsync(key, "Total"));
-
+			var s = Encoding.UTF8.GetString(await _connection.Database.HashGetAsync(key, "Total"));
+			var segments = _humanReadableSerializer.Deserialize<Segments>(s);
 			for (var i = 0; i < segments.NoOfSegments; i++)
 			{
 				list.Add(_connection.Database.HashGetAsync(key, $"Segment{i}"));
 			}
 
 			var results = await Task.WhenAll(list.ToArray());
-			var sb = new StringBuilder();
+			var data = new List<byte>();
 			foreach (var r in results)
 			{
-				sb.Append(r);
+				data.AddRange((byte[])r);
 			}
 
-			return sb.ToString();
+			return data.ToArray();
 		}
+
 
 		private async Task SaveSegments(string key, IGrainState grainState, Type stateType)
 		{
 			var max = _options.SegmentSize!.Value;
 			var entries = new List<HashEntry>();
 			var segment = 0;
-			RedisValue serializedState = _humanReadableSerializer.Serialize(grainState, stateType);
-			var tmp = serializedState.ToString();
-			while (tmp.Length > max)
+
+			RedisValue serializedState = _options.HumanReadableSerialization
+				? _humanReadableSerializer.Serialize(grainState, stateType)
+				: _serializer.Serialize(grainState, stateType);
+
+			var n = serializedState.Length();
+			var tmp = new byte[max];
+			while (n > max)
 			{
-				entries.Add(new HashEntry($"Segment{segment}", tmp.Substring(0, max)));
+				Array.Copy(serializedState, segment * max, tmp, 0, max);
+				entries.Add(new HashEntry($"Segment{segment}", tmp));
 				segment++;
-				tmp = tmp.Substring(max);
+				n -= max;
 			}
 
-			if (tmp.Length != 0)
+			if (n > 0)
 			{
+				Array.Copy(serializedState, segment * max, tmp, 0, n);
 				entries.Add(new HashEntry($"Segment{segment}", tmp));
 				segment++;
 			}
 
 			if (!_options.DeleteOldSegments)
 			{
-				entries.Add(new HashEntry("Total", _humanReadableSerializer.Serialize(
-					new Segments()
-					{
-						NoOfSegments = segment
-					},
-					typeof(Segments))));
+
+				var segments = new Segments()
+				{
+					NoOfSegments = segment
+				};
+
+				var bytes = Encoding.UTF8.GetBytes(_humanReadableSerializer.Serialize<Segments>(segments));
+
+				entries.Add(new HashEntry("Total", bytes));
+
 				await TimeAction(() => _connection.Database.HashSetAsync(key, entries.ToArray()), key, OperationDirection.Read, stateType);
 				return;
 			}
@@ -298,7 +311,6 @@ namespace Orleans.Persistence.Redis.Core
 				segment++;
 			}
 			await TimeAction(() => pending, key, OperationDirection.Read, stateType);
-			return;
 		}
 	}
 
