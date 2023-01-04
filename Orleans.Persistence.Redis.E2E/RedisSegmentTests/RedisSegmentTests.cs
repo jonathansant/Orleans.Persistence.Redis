@@ -85,15 +85,15 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 					.ConfigureApplicationParts(parts =>
 						parts.AddApplicationPart(typeof(ITestGrainSegments).Assembly).WithReferences())
 					.AddRedisGrainStorage("TestingProvider")
-					.AddRedisDefaultHumanReadableSerializer()
+					.AddRedisSerializer<SerializerBrotliCompression>()
 					.Build(builder => builder.Configure(opts =>
 					{
 						opts.Servers = new List<string> { "localhost" };
 						opts.ClientName = "testing";
-						opts.HumanReadableSerialization = true;
+						//opts.HumanReadableSerialization = true;
 						opts.ThrowExceptionOnInconsistentETag = false;
 						opts.DeleteOldSegments = false;
-						opts.SegmentSize = 1024 * 1024;
+						//opts.SegmentSize = 1024 * 1024;
 					}))
 				;
 		}

@@ -12,10 +12,10 @@ namespace Orleans.Persistence.Redis.Serialization
 			_serializationManager = serializationManager;
 		}
 
-		public byte[] Serialize(object raw, Type type)
+		public virtual byte[] Serialize(object raw, Type type)
 			=> _serializationManager.SerializeToByteArray(raw);
 
-		public object Deserialize(byte[] serializedData, Type type)
+		public virtual object Deserialize(byte[] serializedData, Type type)
 			=> _serializationManager.Deserialize(type, new BinaryTokenStreamReader(serializedData));
 	}
 }
