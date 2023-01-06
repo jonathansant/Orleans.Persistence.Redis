@@ -1,4 +1,14 @@
-﻿## [1.3.0](https://github.com/jonathansant/orleans.persistence.redis/compare/1.2.2...1.3.0) (2023-01-02)
+﻿## [1.4.0](https://github.com/jonathansant/orleans.persistence.redis/compare/1.3.0...1.4.0) (2023-01-06)
+
+### Features
+
+- Added a feature to compress serialized data when using Orleans Serializer - can be enabled by 
+  calling: `AddDefaultRedisBrotliSerializer()` using Brotli Serialization
+- Added a feature to segment data in chunks - this uses HashTable in redis - can be enabled by
+  setting option `SegmentSize` in RedisStorageOptions
+- Option to delete unused Segments enabled `DeleteOldSegments` in RedisStorageOptions
+  
+## [1.3.0](https://github.com/jonathansant/orleans.persistence.redis/compare/1.2.2...1.3.0) (2023-01-02)
 
 ### Features
 
