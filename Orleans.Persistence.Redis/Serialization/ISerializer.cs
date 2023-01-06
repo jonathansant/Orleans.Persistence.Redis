@@ -6,6 +6,8 @@ namespace Orleans.Persistence.Redis.Serialization
 	{
 		string Serialize(object raw, Type type);
 		object Deserialize(string serializedData, Type type);
+		string Serialize<T>(T raw);
+		T Deserialize<T>(string serializedData);
 	}
 
 	public interface ISerializer

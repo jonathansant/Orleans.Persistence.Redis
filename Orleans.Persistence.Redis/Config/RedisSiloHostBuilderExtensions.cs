@@ -106,6 +106,9 @@ namespace Orleans.Hosting
 		internal static ISiloHostBuilder AddRedisDefaultSerializer(this ISiloHostBuilder builder, string name)
 			=> builder.AddRedisSerializer<OrleansSerializer>(name);
 
+		internal static ISiloHostBuilder AddRedisDefaultBrotliSerializer(this ISiloHostBuilder builder, string name)
+			=> builder.AddRedisSerializer<OrleansSerializerBrotli>(name);
+
 		internal static ISiloHostBuilder AddRedisDefaultHumanReadableSerializer(this ISiloHostBuilder builder,
 			string name)
 			=> builder.AddRedisHumanReadableSerializer<JsonSerializer>(

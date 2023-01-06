@@ -21,6 +21,14 @@ namespace Orleans.Persistence.Redis.Config
 		public bool UseSsl { get; set; }
 		public string SslHost { get; set; }
 		public float FieldSizeWarningThresholdInMb { get; set; } = 50;
+		/// <summary>
+		/// Segment Size in bytes, if not supplied, segments will not be used
+		/// </summary>
+		public int? SegmentSize { get; set; }
+		/// <summary>
+		/// Deletes old segments (default is true)
+		/// </summary>
+		public bool DeleteOldSegments { get; set; }
 
 		internal Func<string, string> KeyBuilder { get; set; }
 
@@ -81,6 +89,13 @@ namespace Orleans.Persistence.Redis.Config
 		public RedisStorageSiloHostBuilderOptionsBuilder AddDefaultRedisSerializer()
 		{
 			_builder.AddRedisDefaultSerializer(_name);
+			_serializerAdded = true;
+			return this;
+		}
+
+		public RedisStorageSiloHostBuilderOptionsBuilder AddDefaultRedisBrotliSerializer()
+		{
+			_builder.AddRedisDefaultBrotliSerializer(_name);
 			_serializerAdded = true;
 			return this;
 		}
