@@ -135,29 +135,7 @@ namespace Orleans.Persistence.Redis.Core
 			);
 
 		private async Task TimeAction(Func<Task> action, string key, OperationDirection direction, Type grainStateType)
-		{
-			if (!_logger.IsEnabled(LogLevel.Warning))
-			{
-				await action();
-				return;
-			}
-
-			var watch = ValueStopwatch.StartNew();
-
-			await action();
-
-			var stopwatchElapsed = watch.GetElapsedTime();
-			var threshold = _options.ExecutionDurationWarnThreshold;
-			if (_logger.IsEnabled(LogLevel.Warning) && stopwatchElapsed > threshold)
-				_logger.LogWarning(
-				"Redis operation took longer than threshold {elapsed:n0}ms/{thresholdDuration:n0}ms. Key: {redisKey}, Type: {grainStateType}, Direction: {direction}",
-				stopwatchElapsed.TotalMilliseconds,
-				threshold.TotalMilliseconds,
-				key,
-				grainStateType.GetDemystifiedName(),
-				direction
-			);
-		}
+			=> await TimeAction(() => new List<Task>() { action() }, key, direction, grainStateType);
 
 		private async Task TimeAction(Func<List<Task>> action, string key, OperationDirection direction, Type grainStateType)
 		{
@@ -223,43 +201,43 @@ namespace Orleans.Persistence.Redis.Core
 
 			if (_options.DeleteOldSegments)
 			{
-				var max = _options.SegmentSize!.Value;
+				var segmentSize = _options.SegmentSize!.Value;
 				var entries = await _connection.Database.HashGetAllAsync(key);
-				var n = entries.Sum(x => x.Value.Length());
-				var buffer = new byte[n];
+				var totalBytes = entries.Sum(x => x.Value.Length());
+				var buffer = new byte[totalBytes];
 
-				foreach (var o in entries)
+				foreach (var e in entries)
 				{
-					var index = int.Parse(Regex.Match(o.Name!, @"^Segment(\d+)$").Groups[1].Value);
-					var temp = Encoding.UTF8.GetBytes(o.Value!);
-					Array.Copy(temp, 0, buffer, index * max, temp.Length);
+					var index = int.Parse(Regex.Match(e.Name!, @"^Segment(\d+)$").Groups[1].Value);
+					var temp = Encoding.UTF8.GetBytes(e.Value!);
+					Array.Copy(temp, 0, buffer, index * segmentSize, temp.Length);
 				}
 
 				return buffer;
 			}
 
 			var list = new List<Task<RedisValue>>();
-			var s = Encoding.UTF8.GetString(await _connection.Database.HashGetAsync(key, "Total"));
-			var segments = _humanReadableSerializer.Deserialize<Segments>(s);
+			var tmp = Encoding.UTF8.GetString(await _connection.Database.HashGetAsync(key, "Total"));
+			var segments = _humanReadableSerializer.Deserialize<Segments>(tmp);
 			for (var i = 0; i < segments.NoOfSegments; i++)
 			{
 				list.Add(_connection.Database.HashGetAsync(key, $"Segment{i}"));
 			}
 
 			var results = await Task.WhenAll(list.ToArray());
+
 			var data = new List<byte>();
 			foreach (var r in results)
 			{
-				data.AddRange((byte[])r);
+				data.AddRange(Decode(r));
 			}
 
 			return data.ToArray();
 		}
 
-
 		private async Task SaveSegments(string key, IGrainState grainState, Type stateType)
 		{
-			var max = _options.SegmentSize!.Value;
+			var segmentSize = _options.SegmentSize!.Value;
 			var entries = new List<HashEntry>();
 			var segment = 0;
 
@@ -267,32 +245,30 @@ namespace Orleans.Persistence.Redis.Core
 				? _humanReadableSerializer.Serialize(grainState, stateType)
 				: _serializer.Serialize(grainState, stateType);
 
-			var n = serializedState.Length();
-			var tmp = new byte[max];
-			while (n > max)
+			var totalBytes = serializedState.Length();
+			var tmp = new byte[segmentSize];
+			while (totalBytes > segmentSize)
 			{
-				Array.Copy(serializedState, segment * max, tmp, 0, max);
-				entries.Add(new HashEntry($"Segment{segment}", tmp));
+				Array.Copy(serializedState, segment * segmentSize, tmp, 0, segmentSize);
+				entries.Add(new HashEntry($"Segment{segment}", Encode(tmp)));
 				segment++;
-				n -= max;
+				totalBytes -= segmentSize;
 			}
 
-			if (n > 0)
+			if (totalBytes > 0)
 			{
-				Array.Copy(serializedState, segment * max, tmp, 0, n);
-				entries.Add(new HashEntry($"Segment{segment}", tmp));
+				tmp = new byte[totalBytes];
+				Array.Copy(serializedState, segment * segmentSize, tmp, 0, totalBytes);
+				entries.Add(new HashEntry($"Segment{segment}", Encode(tmp)));
 				segment++;
 			}
 
 			if (!_options.DeleteOldSegments)
 			{
-
-				var segments = new Segments()
+				var bytes = Encoding.UTF8.GetBytes(_humanReadableSerializer.Serialize<Segments>(new Segments()
 				{
 					NoOfSegments = segment
-				};
-
-				var bytes = Encoding.UTF8.GetBytes(_humanReadableSerializer.Serialize<Segments>(segments));
+				}));
 
 				entries.Add(new HashEntry("Total", bytes));
 
@@ -300,18 +276,24 @@ namespace Orleans.Persistence.Redis.Core
 				return;
 			}
 
-			var pending = new List<Task>
+			var pendingList = new List<Task>
 			{
 				_connection.Database.HashSetAsync(key, entries.ToArray())
 			};
 
 			while (await _connection.Database.HashExistsAsync(key, $"Segment{segment}"))
 			{
-				pending.Add(_connection.Database.HashDeleteAsync(key, $"Segment{segment}"));
+				pendingList.Add(_connection.Database.HashDeleteAsync(key, $"Segment{segment}"));
 				segment++;
 			}
-			await TimeAction(() => pending, key, OperationDirection.Read, stateType);
+			await TimeAction(() => pendingList, key, OperationDirection.Read, stateType);
 		}
+
+		private string Encode(RedisValue value)
+			=> _options.HumanReadableSerialization ? value : Convert.ToBase64String(value);
+
+		private byte[] Decode(RedisValue value)
+			=> _options.HumanReadableSerialization ? value : Convert.FromBase64String(value);
 	}
 
 	internal enum OperationDirection

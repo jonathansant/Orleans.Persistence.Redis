@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Orleans.Hosting;
-using Orleans.TestingHost;
+﻿using Orleans.TestingHost;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +10,85 @@ using Xunit.Abstractions;
 
 namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 {
-	public class RedisSegmentTests : TestBase<RedisSegmentTests.SiloBuilderConfigurator, RedisSegmentTests.ClientBuilderConfigurator>
+	public class RedisOrleansSerializerTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrlensSerializer>
+	{
+		public RedisOrleansSerializerTest(ITestOutputHelper output) : base(output)
+		{
+		}
+
+		[Fact]
+		public async Task Test()
+		{
+			await PerformTest();
+		}
+	}
+
+	public class RedisOrleansSerializerCompressedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrlensSerializerCompressed>
+	{
+		public RedisOrleansSerializerCompressedTest(ITestOutputHelper output) : base(output)
+		{
+		}
+
+		[Fact]
+		public async Task Test()
+		{
+			await PerformTest();
+		}
+	}
+
+	public class RedisOrleansSerializerSegmentedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrlensSerializerSegmented>
+	{
+		public RedisOrleansSerializerSegmentedTest(ITestOutputHelper output) : base(output)
+		{
+		}
+
+		[Fact]
+		public async Task Test()
+		{
+			await PerformTest();
+		}
+	}
+
+	public class RedisOrleansSerializerCompressedSegmentedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrlensSerializerCompressedSegmented>
+	{
+		public RedisOrleansSerializerCompressedSegmentedTest(ITestOutputHelper output) : base(output)
+		{
+		}
+
+		[Fact]
+		public async Task Test()
+		{
+			await PerformTest();
+		}
+	}
+
+	public class RedisHumanSerializerTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorHumanSerializer>
+	{
+		public RedisHumanSerializerTest(ITestOutputHelper output) : base(output)
+		{
+		}
+
+		[Fact]
+		public async Task Test()
+		{
+			await PerformTest();
+		}
+	}
+
+	public class RedisHumanSerializerSegmentedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorHumanSerializerSegmented>
+	{
+		public RedisHumanSerializerSegmentedTest(ITestOutputHelper output) : base(output)
+		{
+		}
+
+		[Fact]
+		public async Task Test()
+		{
+			await PerformTest();
+		}
+	}
+
+	public class RedisSegmentTests<T> : TestBase<T, SiloConfigurator.ClientBuilderConfigurator> where T : ISiloBuilderConfigurator, new()
 	{
 		private readonly ITestOutputHelper _output;
 
@@ -22,19 +98,16 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 			Initialize(3);
 		}
 
-
 		private async Task<string> Arrange()
 		{
 			await FlushDb();
-
 			// arrange
 			var dataGenerated = await GenerateData(10 * 10);
 			Assert.NotNull(dataGenerated);
 			return dataGenerated;
 		}
 
-		[Fact]
-		public async Task SegmentTest1()
+		public async Task PerformTest()
 		{
 			try
 			{
@@ -69,34 +142,6 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 			}
 		}
 
-		public class ClientBuilderConfigurator : IClientBuilderConfigurator
-		{
-			public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)
-				=> clientBuilder
-					.ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(ITestGrain).Assembly).WithReferences())
-					.AddSimpleMessageStreamProvider("TestStream")
-			;
-		}
-
-		public class SiloBuilderConfigurator : ISiloBuilderConfigurator
-		{
-			public void Configure(ISiloHostBuilder hostBuilder)
-				=> hostBuilder
-					.ConfigureApplicationParts(parts =>
-						parts.AddApplicationPart(typeof(ITestGrainSegments).Assembly).WithReferences())
-					.AddRedisGrainStorage("TestingProvider")
-					.AddRedisSerializer<SerializerBrotliCompression>()
-					.Build(builder => builder.Configure(opts =>
-					{
-						opts.Servers = new List<string> { "localhost" };
-						opts.ClientName = "testing";
-						//opts.HumanReadableSerialization = true;
-						opts.ThrowExceptionOnInconsistentETag = false;
-						opts.DeleteOldSegments = false;
-						//opts.SegmentSize = 1024 * 1024;
-					}))
-				;
-		}
 		private static async Task<string> GenerateData(int n) // 100kb
 		{
 			const string filename = @"RedisSegmentTests\data_100kb.txt";

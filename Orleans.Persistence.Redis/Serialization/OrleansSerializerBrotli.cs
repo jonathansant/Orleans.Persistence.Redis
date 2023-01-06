@@ -1,13 +1,13 @@
-﻿using Orleans.Serialization;
+﻿using Brotli;
+using Orleans.Serialization;
 using System;
 using System.IO;
 using System.IO.Compression;
 
-namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests;
-
-public class SerializerBrotliCompression : Serialization.OrleansSerializer
+namespace Orleans.Persistence.Redis.Serialization;
+public class OrleansSerializerBrotli : Serialization.OrleansSerializer
 {
-	public SerializerBrotliCompression(SerializationManager serializationManager) : base(serializationManager)
+	public OrleansSerializerBrotli(SerializationManager serializationManager) : base(serializationManager)
 	{
 	}
 
@@ -31,8 +31,10 @@ public class SerializerBrotliCompression : Serialization.OrleansSerializer
 	private static byte[] Compress(byte[] bytes)
 	{
 		using var memoryStream = new MemoryStream();
-		using var brotliStream = new BrotliStream(memoryStream, CompressionLevel.Optimal);
-		brotliStream.Write(bytes, 0, bytes.Length);
+		using (var brotliStream = new BrotliStream(memoryStream, CompressionMode.Compress))
+		{
+			brotliStream.Write(bytes, 0, bytes.Length);
+		}
 		return memoryStream.ToArray();
 	}
 }

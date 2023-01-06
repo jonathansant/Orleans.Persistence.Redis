@@ -93,6 +93,13 @@ namespace Orleans.Persistence.Redis.Config
 			return this;
 		}
 
+		public RedisStorageSiloHostBuilderOptionsBuilder AddDefaultRedisBrotliSerializer()
+		{
+			_builder.AddRedisDefaultBrotliSerializer(_name);
+			_serializerAdded = true;
+			return this;
+		}
+
 		public RedisStorageSiloHostBuilderOptionsBuilder AddRedisDefaultHumanReadableSerializer()
 		{
 			_builder.AddRedisDefaultHumanReadableSerializer(_name);
