@@ -235,7 +235,15 @@ namespace Orleans.Persistence.Redis.Core
 			return data.ToArray();
 		}
 
-		private async Task SaveSegments(string key, IGrainState grainState, Type stateType)
+		private void AddSegmentToRedis(RedisValue serializedValue, List<HashEntry> entries, long segmentSize, long nSize, ref int segment)
+		{
+			var tmp = new byte[nSize];
+			Array.Copy(serializedValue, segment * segmentSize, tmp, 0, nSize);
+			entries.Add(new HashEntry($"Segment{segment}", Encode(tmp)));
+			segment++;
+		}
+
+    private async Task SaveSegments(string key, IGrainState grainState, Type stateType)
 		{
 			var segmentSize = _options.SegmentSize!.Value;
 			var entries = new List<HashEntry>();
@@ -249,18 +257,13 @@ namespace Orleans.Persistence.Redis.Core
 			var tmp = new byte[segmentSize];
 			while (totalBytes > segmentSize)
 			{
-				Array.Copy(serializedState, segment * segmentSize, tmp, 0, segmentSize);
-				entries.Add(new HashEntry($"Segment{segment}", Encode(tmp)));
-				segment++;
+				AddSegmentToRedis(serializedState, entries, segmentSize, segmentSize, ref segment);
 				totalBytes -= segmentSize;
 			}
 
 			if (totalBytes > 0)
 			{
-				tmp = new byte[totalBytes];
-				Array.Copy(serializedState, segment * segmentSize, tmp, 0, totalBytes);
-				entries.Add(new HashEntry($"Segment{segment}", Encode(tmp)));
-				segment++;
+				AddSegmentToRedis(serializedState, entries, segmentSize, totalBytes, ref segment);
 			}
 
 			if (!_options.DeleteOldSegments)
