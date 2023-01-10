@@ -254,7 +254,7 @@ namespace Orleans.Persistence.Redis.Core
 				: _serializer.Serialize(grainState, stateType);
 
 			var totalBytes = serializedState.Length();
-			var tmp = new byte[segmentSize];
+
 			while (totalBytes > segmentSize)
 			{
 				AddSegmentToRedis(serializedState, entries, segmentSize, segmentSize, ref segment);
