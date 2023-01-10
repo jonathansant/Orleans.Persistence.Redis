@@ -243,7 +243,7 @@ namespace Orleans.Persistence.Redis.Core
 			segment++;
 		}
 
-		private async Task SaveSegments(string key, IGrainState grainState, Type stateType)
+    private async Task SaveSegments(string key, IGrainState grainState, Type stateType)
 		{
 			var segmentSize = _options.SegmentSize!.Value;
 			var entries = new List<HashEntry>();

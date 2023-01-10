@@ -1,4 +1,4 @@
-﻿using Humanizer;
+using Humanizer;
 using Microsoft.Extensions.Configuration;
 using Orleans.Hosting;
 using Orleans.Persistence.Redis.Serialization;
@@ -71,7 +71,8 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 				}))
 		;
 	}
-	public class SiloBuilderConfiguratorOrleansSerializerCompressedSegmented : ISiloBuilderConfigurator
+
+  public class SiloBuilderConfiguratorOrleansSerializerCompressedSegmented : ISiloBuilderConfigurator
 	{
 		public void Configure(ISiloHostBuilder hostBuilder)
 			=> hostBuilder
@@ -88,7 +89,8 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 				}))
 		;
 	}
-	public class SiloBuilderConfiguratorOrleansSerializerDeflateCompressionSegmented : ISiloBuilderConfigurator
+
+  public class SiloBuilderConfiguratorOrleansSerializerDeflateCompressionSegmented : ISiloBuilderConfigurator
 	{
 		public void Configure(ISiloHostBuilder hostBuilder)
 			=> hostBuilder
