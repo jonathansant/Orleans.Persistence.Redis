@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 {
-	public class RedisOrleansSerializerTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrlensSerializer>
+	public class RedisOrleansSerializerTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrleansSerializer>
 	{
 		public RedisOrleansSerializerTest(ITestOutputHelper output) : base(output)
 		{
@@ -19,11 +19,11 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		[Fact]
 		public async Task Test()
 		{
-			await PerformTest();
+			await PerformTest("SerializerTest");
 		}
 	}
 
-	public class RedisOrleansSerializerCompressedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrlensSerializerCompressed>
+	public class RedisOrleansSerializerCompressedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrleansSerializerCompressed>
 	{
 		public RedisOrleansSerializerCompressedTest(ITestOutputHelper output) : base(output)
 		{
@@ -32,11 +32,24 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		[Fact]
 		public async Task Test()
 		{
-			await PerformTest();
+			await PerformTest("SerializerCompressedTest");
 		}
 	}
 
-	public class RedisOrleansSerializerSegmentedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrlensSerializerSegmented>
+	public class RedisOrleansSerializerDeflateCompressTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrleansSerializerDeflateCompression>
+	{
+		public RedisOrleansSerializerDeflateCompressTest(ITestOutputHelper output) : base(output)
+		{
+		}
+
+		[Fact]
+		public async Task Test()
+		{
+			await PerformTest("SerializerCompressDeflateTest");
+		}
+	}
+
+	public class RedisOrleansSerializerSegmentedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrleansSerializerSegmented>
 	{
 		public RedisOrleansSerializerSegmentedTest(ITestOutputHelper output) : base(output)
 		{
@@ -45,11 +58,16 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		[Fact]
 		public async Task Test()
 		{
-			await PerformTest();
+			await PerformTest("OrleansSerializerSegmentedTest");
+		}
+		[Fact]
+		public async Task TestSmallDataSet()
+		{
+			await PerformTest("OrleansSerializerSegmentedTestSDS", 1);
 		}
 	}
 
-	public class RedisOrleansSerializerCompressedSegmentedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrlensSerializerCompressedSegmented>
+	public class RedisOrleansSerializerCompressedSegmentedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrleansSerializerCompressedSegmented>
 	{
 		public RedisOrleansSerializerCompressedSegmentedTest(ITestOutputHelper output) : base(output)
 		{
@@ -58,7 +76,20 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		[Fact]
 		public async Task Test()
 		{
-			await PerformTest();
+			await PerformTest("SerializerCompressedSegmentedTest");
+		}
+	}
+
+	public class SiloBuilderConfiguratorOrleansSerializerDeflateCompressionSegmentedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrleansSerializerDeflateCompressionSegmented>
+	{
+		public SiloBuilderConfiguratorOrleansSerializerDeflateCompressionSegmentedTest(ITestOutputHelper output) : base(output)
+		{
+		}
+
+		[Fact]
+		public async Task Test()
+		{
+			await PerformTest("SerializerCompressedDeflateSegmentedTest");
 		}
 	}
 
@@ -71,7 +102,7 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		[Fact]
 		public async Task Test()
 		{
-			await PerformTest();
+			await PerformTest("HumanSerializerTest");
 		}
 	}
 
@@ -84,10 +115,14 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		[Fact]
 		public async Task Test()
 		{
-			await PerformTest();
+			await PerformTest("HumanSerializerSegmentedTest");
+		}
+		[Fact]
+		public async Task TestSmallDataSet()
+		{
+			await PerformTest("HumanSerializerSegmentedTestSDS", 1);
 		}
 	}
-
 	public class RedisSegmentTests<T> : TestBase<T, SiloConfigurator.ClientBuilderConfigurator> where T : ISiloBuilderConfigurator, new()
 	{
 		private readonly ITestOutputHelper _output;
@@ -98,23 +133,23 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 			Initialize(3);
 		}
 
-		private async Task<string> Arrange()
+		private async Task<string> Arrange(int n = 100)
 		{
 			await FlushDb();
 			// arrange
-			var dataGenerated = await GenerateData(10 * 10);
+			var dataGenerated = await GenerateData(n);
 			Assert.NotNull(dataGenerated);
 			return dataGenerated;
 		}
 
-		public async Task PerformTest()
+		public async Task PerformTest(string name, int n = 100)
 		{
 			try
 			{
-				var dataGenerated = await Arrange();
+				var dataGenerated = await Arrange(n);
 				var original = new HashSet<string>();
 
-				var grain = Cluster.GrainFactory.GetGrain<ITestGrainSegments>("segmentTest");
+				var grain = Cluster.GrainFactory.GetGrain<ITestGrainSegments>($"segmentTest_{name}");
 
 				original.Add(dataGenerated);
 
