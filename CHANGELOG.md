@@ -1,4 +1,12 @@
-﻿## [1.4.1](https://github.com/jonathansant/orleans.persistence.redis/compare/1.4.0...1.4.1) (2023-01-10)
+﻿## [1.4.2](https://github.com/jonathansant/orleans.persistence.redis/compare/1.4.1...1.4.2) (2023-02-21)
+
+### Features
+
+- Added a deflate unit tests (that verifies file integrity)
+- Added BrotliCompression, DeflateCompression, GZipCompression and RawDeflateCompression modules that 
+  can be used to compress human serialized data
+  
+## [1.4.1](https://github.com/jonathansant/orleans.persistence.redis/compare/1.4.0...1.4.1) (2023-01-10)
 
 ### Features
 
