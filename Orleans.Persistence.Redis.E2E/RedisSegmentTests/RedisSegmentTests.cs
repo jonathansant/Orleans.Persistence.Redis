@@ -207,7 +207,6 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		private static async Task<string> GenerateData(int n) // 100kb
 		{
 			const string filename = @"RedisSegmentTests\data_100kb.txt";
-			//const string filename = @"c:\temp\indices.json";
 			Assert.True(File.Exists(filename));
 
 			var temp = await File.ReadAllTextAsync(filename);
