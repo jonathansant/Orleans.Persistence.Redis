@@ -124,9 +124,9 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		}
 	}
 
-	public class CompressedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorHumanSerializerCompressed>
+	public class CompressedTestHumanSerializable : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorHumanSerializerCompressed>
 	{
-		public CompressedTest(ITestOutputHelper output) : base(output)
+		public CompressedTestHumanSerializable(ITestOutputHelper output) : base(output)
 		{
 		}
 
@@ -137,9 +137,9 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		}
 	}
 
-	public class CompressedTestWithSegments : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorHumanSerializerCompressedWithSegments>
+	public class CompressedTestHumanSerializableWithSegments : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorHumanSerializerCompressedWithSegments>
 	{
-		public CompressedTestWithSegments(ITestOutputHelper output) : base(output)
+		public CompressedTestHumanSerializableWithSegments(ITestOutputHelper output) : base(output)
 		{
 		}
 
