@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Orleans.Hosting;
+using Orleans.Persistence.Redis.Compression;
 using Orleans.Persistence.Redis.Serialization;
 using System;
 using System.Collections.Generic;
@@ -107,6 +108,13 @@ namespace Orleans.Persistence.Redis.Config
 			return this;
 		}
 
+		public RedisStorageSiloHostBuilderOptionsBuilder AddCompression<TCompression>()
+			where TCompression : ICompression
+		{
+			_builder.AddCompression<TCompression>(_name);
+			return this;
+		}
+
 		public ISiloHostBuilder Build(Action<OptionsBuilder<RedisStorageOptions>> configureOptions)
 		{
 			if (!_serializerAdded)
@@ -176,6 +184,13 @@ namespace Orleans.Persistence.Redis.Config
 		{
 			_builder.AddRedisDefaultHumanReadableSerializer(_name);
 			_humanSerializerAdded = true;
+			return this;
+		}
+
+		public RedisStorageOptionsBuilder AddCompression<TCompression>()
+			where TCompression : ICompression
+		{
+			_builder.AddCompression<TCompression>(_name);
 			return this;
 		}
 

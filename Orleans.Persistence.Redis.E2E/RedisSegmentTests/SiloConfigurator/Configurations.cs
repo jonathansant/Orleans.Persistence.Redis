@@ -143,6 +143,47 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 		;
 	}
 
+	public class SiloBuilderConfiguratorHumanSerializerCompressed : ISiloBuilderConfigurator
+	{
+		public void Configure(ISiloHostBuilder hostBuilder)
+			=> hostBuilder
+				.ConfigureApplicationParts(parts =>
+					parts.AddApplicationPart(typeof(ITestGrainSegments).Assembly).WithReferences())
+				.AddRedisGrainStorage("TestingProvider")
+				.AddCompression<Compression.RawDeflateCompression>()
+				//.AddCompression<Compression.BrotliCompression>()
+				//.AddCompression<Compression.GZipCompression>()
+
+				.Build(builder => builder.Configure(opts =>
+				{
+					opts.Servers = new List<string> { "localhost" };
+					opts.ClientName = "testing";
+					opts.ThrowExceptionOnInconsistentETag = false;
+					opts.HumanReadableSerialization = true;
+				}));
+	}
+
+	public class SiloBuilderConfiguratorHumanSerializerCompressedWithSegments : ISiloBuilderConfigurator
+	{
+		public void Configure(ISiloHostBuilder hostBuilder)
+			=> hostBuilder
+				.ConfigureApplicationParts(parts =>
+					parts.AddApplicationPart(typeof(ITestGrainSegments).Assembly).WithReferences())
+				.AddRedisGrainStorage("TestingProvider")
+				.AddCompression<Compression.RawDeflateCompression>()
+				//.AddCompression<Compression.BrotliCompression>()
+				//.AddCompression<Compression.GZipCompression>()
+
+				.Build(builder => builder.Configure(opts =>
+				{
+					opts.Servers = new List<string> { "localhost" };
+					opts.ClientName = "testing";
+					opts.ThrowExceptionOnInconsistentETag = false;
+					opts.HumanReadableSerialization = true;
+					opts.SegmentSize = (int)(100.Kilobytes().Bytes);
+				}));
+	}
+
 	public class ClientBuilderConfigurator : IClientBuilderConfigurator
 	{
 		public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)

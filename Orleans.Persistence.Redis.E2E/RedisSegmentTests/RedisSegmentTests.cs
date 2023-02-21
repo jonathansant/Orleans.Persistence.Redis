@@ -124,6 +124,32 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		}
 	}
 
+	public class CompressedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorHumanSerializerCompressed>
+	{
+		public CompressedTest(ITestOutputHelper output) : base(output)
+		{
+		}
+
+		[Fact]
+		public async Task Test()
+		{
+			await PerformTest("HumanSerializerCompressedTest");
+		}
+	}
+
+	public class CompressedTestWithSegments : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorHumanSerializerCompressedWithSegments>
+	{
+		public CompressedTestWithSegments(ITestOutputHelper output) : base(output)
+		{
+		}
+
+		[Fact]
+		public async Task Test()
+		{
+			await PerformTest("HumanSerializerCompressedTestWithSegments");
+		}
+	}
+
 	public class RedisSegmentTests<T> : TestBase<T, SiloConfigurator.ClientBuilderConfigurator> where T : ISiloBuilderConfigurator, new()
 	{
 		private readonly ITestOutputHelper _output;
@@ -181,6 +207,7 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		private static async Task<string> GenerateData(int n) // 100kb
 		{
 			const string filename = @"RedisSegmentTests\data_100kb.txt";
+			//const string filename = @"c:\temp\indices.json";
 			Assert.True(File.Exists(filename));
 
 			var temp = await File.ReadAllTextAsync(filename);
