@@ -6,7 +6,7 @@ using System.IO.Compression;
 
 namespace Orleans.Persistence.Redis.Serialization
 {
-	public class BrotliSerializer : Serialization.OrleansSerializer
+	public class BrotliSerializer : OrleansSerializer
 	{
 		public BrotliSerializer(SerializationManager serializationManager) : base(serializationManager)
 		{

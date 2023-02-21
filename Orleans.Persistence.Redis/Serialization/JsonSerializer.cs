@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Orleans.Persistence.Redis.Compression;
 using System;
 
 namespace Orleans.Persistence.Redis.Serialization
@@ -6,12 +7,15 @@ namespace Orleans.Persistence.Redis.Serialization
 	public class JsonSerializer : IHumanReadableSerializer
 	{
 		private readonly JsonSerializerSettings _settings;
+		private readonly ICompression _compression;
 
 		public JsonSerializer(
-			JsonSerializerSettings settings
+			JsonSerializerSettings settings,
+			ICompression? compression = null
 		)
 		{
 			_settings = settings;
+			_compression = compression;
 		}
 
 		public string Serialize(object raw, Type type)
@@ -21,9 +25,9 @@ namespace Orleans.Persistence.Redis.Serialization
 			=> JsonConvert.DeserializeObject(serializedData, type, _settings);
 
 		public string Serialize<T>(T raw)
-			=> JsonConvert.SerializeObject(raw);
+			=> Serialize(raw, typeof(T));
 
 		public T Deserialize<T>(string serializedData)
-			=> JsonConvert.DeserializeObject<T>(serializedData);
+			=> (T)Deserialize(serializedData, typeof(T));
 	}
 }

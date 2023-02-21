@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29418.71
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Persistence.Redis", "Orleans.Persistence.Redis\Orleans.Persistence.Redis.csproj", "{D2FCB20D-DE90-4DF1-B6F6-9E4A06196EF6}"
 EndProject
@@ -27,6 +27,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestGrains", "Samples\TestGrains\TestGrains.csproj", "{BE13263C-FCF6-4F0E-B4D7-61545C8C717C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestClient", "Samples\TestClient\TestClient.csproj", "{7FD09B53-98ED-4F3F-B5C3-E811A04FFBF8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeflateCompressionTest", "DeflateCompressionTest\DeflateCompressionTest.csproj", "{1042E086-A520-4D68-BF68-2B766BC74D52}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -58,6 +60,10 @@ Global
 		{7FD09B53-98ED-4F3F-B5C3-E811A04FFBF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7FD09B53-98ED-4F3F-B5C3-E811A04FFBF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7FD09B53-98ED-4F3F-B5C3-E811A04FFBF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1042E086-A520-4D68-BF68-2B766BC74D52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1042E086-A520-4D68-BF68-2B766BC74D52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1042E086-A520-4D68-BF68-2B766BC74D52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1042E086-A520-4D68-BF68-2B766BC74D52}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -68,6 +74,7 @@ Global
 		{785B4D38-5101-4DA3-AA13-0264F4DE8A8A} = {0C057C82-36AC-42A2-BBEC-5AF33395A04B}
 		{BE13263C-FCF6-4F0E-B4D7-61545C8C717C} = {0C057C82-36AC-42A2-BBEC-5AF33395A04B}
 		{7FD09B53-98ED-4F3F-B5C3-E811A04FFBF8} = {0C057C82-36AC-42A2-BBEC-5AF33395A04B}
+		{1042E086-A520-4D68-BF68-2B766BC74D52} = {0C057C82-36AC-42A2-BBEC-5AF33395A04B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {19F423B8-DD85-4046-BBA2-EBE4F74867AA}

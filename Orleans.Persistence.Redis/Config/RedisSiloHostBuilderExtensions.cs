@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Orleans.Configuration;
+using Orleans.Persistence.Redis.Compression;
 using Orleans.Persistence.Redis.Config;
 using Orleans.Persistence.Redis.Core;
 using Orleans.Persistence.Redis.Serialization;
@@ -38,6 +39,12 @@ namespace Orleans.Hosting
 				name,
 				provider => new object[] { RedisDefaultJsonSerializerSettings.Get(provider) }
 			);
+
+		internal static ISiloBuilder AddCompression<TCompression>(this ISiloBuilder builder, string name)
+			where TCompression : ICompression
+			=> builder.ConfigureServices(services =>
+				services.AddSingletonNamedService<ICompression>(name, (provider, n)
+					=> ActivatorUtilities.CreateInstance<TCompression>(provider)));
 
 		internal static ISiloBuilder AddRedisSerializer<TSerializer>(
 			this ISiloBuilder builder,
@@ -141,6 +148,14 @@ namespace Orleans.Hosting
 					=> ActivatorUtilities.CreateInstance<TSerializer>(provider, cfg?.Invoke(provider)))
 			);
 
+		internal static ISiloHostBuilder AddCompression<TCompression>(this ISiloHostBuilder builder, string name)
+			where TCompression : ICompression
+		{
+			return builder.ConfigureServices(services =>
+				services.AddSingletonNamedService<ICompression>(name, (provider, n)
+					=> ActivatorUtilities.CreateInstance<TCompression>(provider)));
+		}
+
 		private static IGrainStorage CreateRedisStorage(IServiceProvider services, string name)
 		{
 			var store = services.GetRequiredServiceByName<IGrainStateStore>(name);
@@ -154,6 +169,18 @@ namespace Orleans.Hosting
 			var serializer = provider.GetRequiredServiceByName<ISerializer>(name);
 			var humanReadableSerializer = provider.GetServiceByName<IHumanReadableSerializer>(name);
 			var options = provider.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
+			var compress = provider.GetServiceByName<ICompression>(name);
+
+			if (compress != null)
+				return ActivatorUtilities.CreateInstance<GrainStateStore>(
+					provider,
+					connection,
+					options.Get(name),
+					serializer,
+					humanReadableSerializer,
+					compress
+				);
+
 			return ActivatorUtilities.CreateInstance<GrainStateStore>(
 				provider,
 				connection,

@@ -1,5 +1,6 @@
 ﻿using ByteSizeLib;
 using Microsoft.Extensions.Logging;
+using Orleans.Persistence.Redis.Compression;
 using Orleans.Persistence.Redis.Config;
 using Orleans.Persistence.Redis.Serialization;
 using Orleans.Persistence.Redis.Utils;
@@ -26,6 +27,7 @@ namespace Orleans.Persistence.Redis.Core
 		private readonly IHumanReadableSerializer _humanReadableSerializer;
 		private readonly ILogger<GrainStateStore> _logger;
 		private readonly RedisStorageOptions _options;
+		private readonly ICompression _compression;
 
 		public GrainStateStore(
 			DbConnection connection,
@@ -33,6 +35,17 @@ namespace Orleans.Persistence.Redis.Core
 			ISerializer serializer,
 			IHumanReadableSerializer humanReadableSerializer,
 			ILogger<GrainStateStore> logger
+		) : this(connection, options, serializer, humanReadableSerializer, logger, null)
+		{
+		}
+
+		public GrainStateStore(
+			DbConnection connection,
+			RedisStorageOptions options,
+			ISerializer serializer,
+			IHumanReadableSerializer humanReadableSerializer,
+			ILogger<GrainStateStore> logger,
+			ICompression compression
 		)
 		{
 			_connection = connection;
@@ -40,6 +53,7 @@ namespace Orleans.Persistence.Redis.Core
 			_humanReadableSerializer = humanReadableSerializer;
 			_logger = logger;
 			_options = options;
+			_compression = compression;
 		}
 
 		public async Task<IGrainState> GetGrainState(string grainId, Type stateType)
@@ -49,23 +63,22 @@ namespace Orleans.Persistence.Redis.Core
 			RedisValue state = default;
 
 			if (_options.SegmentSize.HasValue)
-			{
 				await TimeAction(async () => state = await ReadSegments(key), key, OperationDirection.Read, stateType);
-			}
 			else
-			{
 				await TimeAction(async () => state = await _connection.Database.StringGetAsync(key), key, OperationDirection.Read, stateType);
-			}
 
 			if (!state.HasValue)
 				return null;
 
 			LogDiagnostics(key, state, OperationDirection.Read, stateType);
 
-			if (_options.HumanReadableSerialization)
-				return (IGrainState)_humanReadableSerializer.Deserialize(state, stateType);
+			if (!_options.HumanReadableSerialization)
+				return (IGrainState)_serializer.Deserialize(state, stateType);
 
-			return (IGrainState)_serializer.Deserialize(state, stateType);
+			if (_compression != null)
+				state = _compression.Decompress(state).GetString();
+
+			return (IGrainState)_humanReadableSerializer.Deserialize(state, stateType);
 		}
 
 		public async Task UpdateGrainState(string grainId, IGrainState grainState)
@@ -87,10 +100,7 @@ namespace Orleans.Persistence.Redis.Core
 				return;
 			}
 
-
-			RedisValue serializedState = _options.HumanReadableSerialization
-				? _humanReadableSerializer.Serialize(grainState, stateType)
-				: _serializer.Serialize(grainState, stateType);
+			var serializedState = Serialize(grainState, stateType);
 
 			LogDiagnostics(key, serializedState, OperationDirection.Write, stateType);
 
@@ -195,9 +205,7 @@ namespace Orleans.Persistence.Redis.Core
 		private async Task<RedisValue> ReadSegments(string key)
 		{
 			if (!await _connection.Database.KeyExistsAsync(key))
-			{
 				return default;
-			}
 
 			if (_options.DeleteOldSegments)
 			{
@@ -220,17 +228,13 @@ namespace Orleans.Persistence.Redis.Core
 			var tmp = Encoding.UTF8.GetString(await _connection.Database.HashGetAsync(key, "Total"));
 			var segments = _humanReadableSerializer.Deserialize<Segments>(tmp);
 			for (var i = 0; i < segments.NoOfSegments; i++)
-			{
 				list.Add(_connection.Database.HashGetAsync(key, $"Segment{i}"));
-			}
 
 			var results = await Task.WhenAll(list.ToArray());
 
 			var data = new List<byte>();
 			foreach (var r in results)
-			{
 				data.AddRange(Decode(r));
-			}
 
 			return data.ToArray();
 		}
@@ -243,16 +247,13 @@ namespace Orleans.Persistence.Redis.Core
 			segment++;
 		}
 
-    private async Task SaveSegments(string key, IGrainState grainState, Type stateType)
+		private async Task SaveSegments(string key, IGrainState grainState, Type stateType)
 		{
 			var segmentSize = _options.SegmentSize!.Value;
 			var entries = new List<HashEntry>();
 			var segment = 0;
 
-			RedisValue serializedState = _options.HumanReadableSerialization
-				? _humanReadableSerializer.Serialize(grainState, stateType)
-				: _serializer.Serialize(grainState, stateType);
-
+			var serializedState = Serialize(grainState, stateType);
 			var totalBytes = serializedState.Length();
 
 			while (totalBytes > segmentSize)
@@ -293,10 +294,31 @@ namespace Orleans.Persistence.Redis.Core
 		}
 
 		private string Encode(RedisValue value)
-			=> _options.HumanReadableSerialization ? value : Convert.ToBase64String(value);
+			=> (_options.HumanReadableSerialization && _compression == null) ? value : Convert.ToBase64String(value);
 
 		private byte[] Decode(RedisValue value)
-			=> _options.HumanReadableSerialization ? value : Convert.FromBase64String(value);
+			=> (_options.HumanReadableSerialization && _compression == null) ? value : Convert.FromBase64String(value);
+
+		private RedisValue Serialize(IGrainState grainState, Type stateType)
+		{
+			RedisValue serializedState;
+			if (!_options.HumanReadableSerialization)
+				return _serializer.Serialize(grainState, stateType);
+
+			var serialized = _humanReadableSerializer.Serialize(grainState, stateType);
+			return _compression != null
+				? _compression.Compress(serialized.GetBytes())
+				: serialized;
+		}
+	}
+
+	internal static class StringExtensions
+	{
+		public static byte[] GetBytes(this string str)
+			=> Encoding.UTF8.GetBytes(str);
+
+		public static string GetString(this byte[] buffer)
+			=> Encoding.UTF8.GetString(buffer);
 	}
 
 	internal enum OperationDirection

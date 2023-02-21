@@ -124,6 +124,32 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		}
 	}
 
+	public class CompressedTestHumanSerializable : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorHumanSerializerCompressed>
+	{
+		public CompressedTestHumanSerializable(ITestOutputHelper output) : base(output)
+		{
+		}
+
+		[Fact]
+		public async Task Test()
+		{
+			await PerformTest("HumanSerializerCompressedTest");
+		}
+	}
+
+	public class CompressedTestHumanSerializableWithSegments : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorHumanSerializerCompressedWithSegments>
+	{
+		public CompressedTestHumanSerializableWithSegments(ITestOutputHelper output) : base(output)
+		{
+		}
+
+		[Fact]
+		public async Task Test()
+		{
+			await PerformTest("HumanSerializerCompressedTestWithSegments");
+		}
+	}
+
 	public class RedisSegmentTests<T> : TestBase<T, SiloConfigurator.ClientBuilderConfigurator> where T : ISiloBuilderConfigurator, new()
 	{
 		private readonly ITestOutputHelper _output;
