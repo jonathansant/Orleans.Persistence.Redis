@@ -56,7 +56,7 @@ namespace Orleans.Persistence.Redis.Core
 			_compression = compression;
 		}
 
-		public async Task<IGrainState> GetGrainState(string grainId, Type stateType)
+		public async Task<IGrainState<T>> GetGrainState<T>(string grainId, Type stateType)
 		{
 			var key = GetKey(grainId);
 
@@ -73,22 +73,22 @@ namespace Orleans.Persistence.Redis.Core
 			LogDiagnostics(key, state, OperationDirection.Read, stateType);
 
 			if (!_options.HumanReadableSerialization)
-				return (IGrainState)_serializer.Deserialize(state, stateType);
+				return (IGrainState<T>)_serializer.Deserialize<T>(state);
 
 			if (_compression != null)
 				state = _compression.Decompress(state).GetString();
 
-			return (IGrainState)_humanReadableSerializer.Deserialize(state, stateType);
+			return (IGrainState<T>)_humanReadableSerializer.Deserialize(state, stateType);
 		}
 
-		public async Task UpdateGrainState(string grainId, IGrainState grainState)
+		public async Task UpdateGrainState<T>(string grainId, IGrainState<T> grainState)
 		{
 			var key = GetKey(grainId);
 			var stateType = grainState.GetType();
 
 			if (_options.ThrowExceptionOnInconsistentETag)
 			{
-				var storedGrainState = await GetGrainState(grainId, stateType);
+				var storedGrainState = await GetGrainState<T>(grainId, stateType);
 				ValidateETag(grainState.ETag, storedGrainState?.ETag, stateType.GetDemystifiedName());
 			}
 
@@ -107,7 +107,7 @@ namespace Orleans.Persistence.Redis.Core
 			await TimeAction(() => _connection.Database.StringSetAsync(key, serializedState), key, OperationDirection.Read, stateType);
 		}
 
-		public async Task DeleteGrainState(string grainId, IGrainState grainState)
+		public async Task DeleteGrainState<T>(string grainId, IGrainState<T> grainState)
 		{
 			var key = GetKey(grainId);
 			var stateType = grainState.GetType();
@@ -247,7 +247,7 @@ namespace Orleans.Persistence.Redis.Core
 			segment++;
 		}
 
-		private async Task SaveSegments(string key, IGrainState grainState, Type stateType)
+		private async Task SaveSegments<T>(string key, IGrainState<T> grainState, Type stateType)
 		{
 			var segmentSize = _options.SegmentSize!.Value;
 			var entries = new List<HashEntry>();
@@ -299,11 +299,11 @@ namespace Orleans.Persistence.Redis.Core
 		private byte[] Decode(RedisValue value)
 			=> (_options.HumanReadableSerialization && _compression == null) ? value : Convert.FromBase64String(value);
 
-		private RedisValue Serialize(IGrainState grainState, Type stateType)
+		private RedisValue Serialize<T>(IGrainState<T> grainState, Type stateType)
 		{
 			RedisValue serializedState;
 			if (!_options.HumanReadableSerialization)
-				return _serializer.Serialize(grainState, stateType);
+				return _serializer.Serialize(grainState);
 
 			var serialized = _humanReadableSerializer.Serialize(grainState, stateType);
 			return _compression != null
