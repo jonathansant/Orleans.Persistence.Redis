@@ -1,28 +1,34 @@
-﻿## [1.5.0](https://github.com/jonathansant/orleans.persistence.redis/compare/1.4.1...1.5.0) (2023-02-21)
+﻿## [2.0.0](https://github.com/jonathansant/orleans.persistence.redis/compare/1.5.0...2.0.0) (2023-02-21)
+
+### Features
+
+- update to Orleans 7
+
+## [1.5.0](https://github.com/jonathansant/orleans.persistence.redis/compare/1.4.1...1.5.0) (2023-02-21)
 
 ### Features
 
 - Added a deflate unit tests (that verifies file integrity)
-- Added BrotliCompression, DeflateCompression, GZipCompression and RawDeflateCompression modules that 
+- Added BrotliCompression, DeflateCompression, GZipCompression and RawDeflateCompression modules that
   can be used to compress human serialized data
-  
+
 ## [1.4.1](https://github.com/jonathansant/orleans.persistence.redis/compare/1.4.0...1.4.1) (2023-01-10)
 
 ### Features
 
 - Added/Updated unit tests
 - Refactored GrainStateStoregments enabled `DeleteOldSegments` in RedisStorageOptions
-  
+
 ## [1.4.0](https://github.com/jonathansant/orleans.persistence.redis/compare/1.3.0...1.4.0) (2023-01-06)
 
 ### Features
 
-- Added a feature to compress serialized data when using Orleans Serializer - can be enabled by 
+- Added a feature to compress serialized data when using Orleans Serializer - can be enabled by
   calling: `AddDefaultRedisBrotliSerializer()` using Brotli Serialization
 - Added a feature to segment data in chunks - this uses HashTable in redis - can be enabled by
   setting option `SegmentSize` in RedisStorageOptions
 - Option to delete unused Segments enabled `DeleteOldSegments` in RedisStorageOptions
-  
+
 ## [1.3.0](https://github.com/jonathansant/orleans.persistence.redis/compare/1.2.2...1.3.0) (2023-01-02)
 
 ### Features
@@ -34,7 +40,7 @@
 
 ### Fix
 
-- Align Default JsonSerializer settings across `ISiloHost` & `ISiloHostBuilderSettings` 
+- Align Default JsonSerializer settings across `ISiloHost` & `ISiloHostBuilderSettings`
 
 ## [1.2.1](https://github.com/jonathansant/orleans.persistence.redis/compare/1.2.0...1.2.1) (2021-07-12)
 
