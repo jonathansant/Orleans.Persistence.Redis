@@ -7,7 +7,7 @@ namespace Orleans.Persistence.Redis.Serialization
 {
 	public class DeflateSerializer : OrleansSerializer
 	{
-		public DeflateSerializer(Serializer serializationManager) : base(serializationManager)
+		public DeflateSerializer(Serializer serializer) : base(serializer)
 		{
 		}
 

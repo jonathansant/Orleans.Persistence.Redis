@@ -9,7 +9,7 @@ namespace Orleans.Persistence.Redis.Serialization
 {
 	public class BrotliSerializer : OrleansSerializer
 	{
-		public BrotliSerializer(Serializer serializationManager) : base(serializationManager)
+		public BrotliSerializer(Serializer serializer) : base(serializer)
 		{
 		}
 

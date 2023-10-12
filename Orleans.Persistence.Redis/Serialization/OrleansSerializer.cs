@@ -5,17 +5,17 @@ namespace Orleans.Persistence.Redis.Serialization
 {
 	public class OrleansSerializer : ISerializer
 	{
-		private readonly Serializer _serializationManager;
+		private readonly Serializer _serializer;
 
-		public OrleansSerializer(Serializer serializationManager)
+		public OrleansSerializer(Serializer serializer)
 		{
-			_serializationManager = serializationManager;
+			_serializer = serializer;
 		}
 
 		public virtual byte[] Serialize(object raw)
-			=> _serializationManager.SerializeToArray(raw);
+			=> _serializer.SerializeToArray(raw);
 
 		public virtual object Deserialize<T>(byte[] serializedData)
-			=> _serializationManager.Deserialize<T>(serializedData);
+			=> _serializer.Deserialize<T>(serializedData);
 	}
 }
