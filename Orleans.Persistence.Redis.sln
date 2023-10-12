@@ -8,10 +8,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{750522C4-B9BD-4050-BA6D-0CC13867ECAF}"
 	ProjectSection(SolutionItems) = preProject
 		CHANGELOG.md = CHANGELOG.md
-		.circleci\config.yml = .circleci\config.yml
 		Directory.Build.props = Directory.Build.props
 		package.json = package.json
 		README.md = README.md
+		.github\workflows\build-publish.yml = .github\workflows\build-publish.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{5EB3A2E9-9B24-4CD5-AB43-38B4A76F2C58}"
