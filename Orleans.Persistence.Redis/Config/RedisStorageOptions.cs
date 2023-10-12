@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Options;
-using Orleans.Hosting;
-using Orleans.Persistence.Redis.Compression;
+﻿using Orleans.Persistence.Redis.Compression;
 using Orleans.Persistence.Redis.Serialization;
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Options;
+using Orleans.Hosting;
 
 namespace Orleans.Persistence.Redis.Config
 {
@@ -52,12 +52,12 @@ namespace Orleans.Persistence.Redis.Config
 
 	public class RedisStorageSiloHostBuilderOptionsBuilder
 	{
-		private readonly ISiloHostBuilder _builder;
+		private readonly ISiloBuilder _builder;
 		private bool _humanSerializerAdded;
 		private bool _serializerAdded;
 		private readonly string _name;
 
-		public RedisStorageSiloHostBuilderOptionsBuilder(ISiloHostBuilder builder, string name)
+		public RedisStorageSiloHostBuilderOptionsBuilder(ISiloBuilder builder, string name)
 		{
 			_builder = builder;
 			_name = name;
@@ -115,7 +115,7 @@ namespace Orleans.Persistence.Redis.Config
 			return this;
 		}
 
-		public ISiloHostBuilder Build(Action<OptionsBuilder<RedisStorageOptions>> configureOptions)
+		public ISiloBuilder Build(Action<OptionsBuilder<RedisStorageOptions>> configureOptions)
 		{
 			if (!_serializerAdded)
 				_builder.AddRedisDefaultSerializer(_name);
