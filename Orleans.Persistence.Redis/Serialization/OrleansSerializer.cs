@@ -1,5 +1,4 @@
 ﻿using Orleans.Serialization;
-using System;
 
 namespace Orleans.Persistence.Redis.Serialization
 {

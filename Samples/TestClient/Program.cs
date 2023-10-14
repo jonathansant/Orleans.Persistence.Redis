@@ -8,6 +8,8 @@ using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using TestGrains;
 
 namespace TestClient
@@ -50,18 +52,20 @@ namespace TestClient
 					var siloAddress = IPAddress.Loopback;
 					var gatewayPort = 30000;
 
-					client = new ClientBuilder()
-						.Configure<ClusterOptions>(options =>
-						{
-							options.ClusterId = "TestCluster";
-							options.ServiceId = "123";
-						})
-						.UseStaticClustering(options => options.Gateways.Add((new IPEndPoint(siloAddress, gatewayPort)).ToGatewayUri()))
-						.ConfigureApplicationParts(parts => parts.AddApplicationPart(Assembly.Load("TestGrains")).WithReferences())
-						.ConfigureLogging(logging => logging.AddConsole())
-						.Build();
-
-					await client.Connect();
+					var host = new HostBuilder()
+						.UseOrleansClient(clientBuilder =>
+							{
+								clientBuilder.Configure<ClusterOptions>(options =>
+								{
+									options.ClusterId = "TestCluster";
+									options.ServiceId = "123";
+								});
+								clientBuilder.UseStaticClustering(options =>
+									options.Gateways.Add(( new IPEndPoint(siloAddress, gatewayPort) ).ToGatewayUri()));
+							})
+							.Build();
+					client = host.Services.GetRequiredService<IClusterClient>();
+					await host.StartAsync();
 
 					Console.WriteLine("Client successfully connect to silo host");
 					break;

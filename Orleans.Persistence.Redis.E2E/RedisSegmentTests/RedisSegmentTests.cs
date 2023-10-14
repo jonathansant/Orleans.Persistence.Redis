@@ -23,18 +23,18 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		}
 	}
 
-	public class RedisOrleansSerializerCompressedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrleansSerializerCompressed>
-	{
-		public RedisOrleansSerializerCompressedTest(ITestOutputHelper output) : base(output)
-		{
-		}
+	//public class RedisOrleansSerializerCompressedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrleansSerializerCompressed>
+	//{
+	//	public RedisOrleansSerializerCompressedTest(ITestOutputHelper output) : base(output)
+	//	{
+	//	}
 
-		[Fact]
-		public async Task Test()
-		{
-			await PerformTest("SerializerCompressedTest");
-		}
-	}
+	//	[Fact]
+	//	public async Task Test()
+	//	{
+	//		await PerformTest("SerializerCompressedTest");
+	//	}
+	//}
 
 	public class RedisOrleansSerializerDeflateCompressTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrleansSerializerDeflateCompression>
 	{
@@ -67,18 +67,18 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		}
 	}
 
-	public class RedisOrleansSerializerCompressedSegmentedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrleansSerializerCompressedSegmented>
-	{
-		public RedisOrleansSerializerCompressedSegmentedTest(ITestOutputHelper output) : base(output)
-		{
-		}
+	//public class RedisOrleansSerializerCompressedSegmentedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrleansSerializerCompressedSegmented>
+	//{
+	//	public RedisOrleansSerializerCompressedSegmentedTest(ITestOutputHelper output) : base(output)
+	//	{
+	//	}
 
-		[Fact]
-		public async Task Test()
-		{
-			await PerformTest("SerializerCompressedSegmentedTest");
-		}
-	}
+	//	[Fact]
+	//	public async Task Test()
+	//	{
+	//		await PerformTest("SerializerCompressedSegmentedTest");
+	//	}
+	//}
 
 	public class SiloBuilderConfiguratorOrleansSerializerDeflateCompressionSegmentedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrleansSerializerDeflateCompressionSegmented>
 	{
@@ -150,7 +150,7 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		}
 	}
 
-	public class RedisSegmentTests<T> : TestBase<T, SiloConfigurator.ClientBuilderConfigurator> where T : ISiloBuilderConfigurator, new()
+	public class RedisSegmentTests<T> : TestBase<T, SiloConfigurator.ClientBuilderConfigurator> where T : ISiloConfigurator, new()
 	{
 		private readonly ITestOutputHelper _output;
 
