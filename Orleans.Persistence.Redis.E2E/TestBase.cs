@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Orleans.Hosting;
 using Orleans.TestingHost;
 using StackExchange.Redis;
