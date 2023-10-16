@@ -20,20 +20,20 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 				}))
 		;
 	}
-	//public class SiloBuilderConfiguratorOrleansSerializerCompressed : ISiloConfigurator
-	//{
-	//	public void Configure(ISiloBuilder hostBuilder)
-	//		=> hostBuilder
-	//			.AddRedisGrainStorage("TestingProvider")
-	//			.AddDefaultRedisBrotliSerializer()
-	//			.Build(builder => builder.Configure(opts =>
-	//			{
-	//				opts.Servers = new List<string> { "localhost" };
-	//				opts.ClientName = "testing";
-	//				opts.ThrowExceptionOnInconsistentETag = false;
-	//			}))
-	//	;
-	//}
+	public class SiloBuilderConfiguratorOrleansSerializerCompressed : ISiloConfigurator
+	{
+		public void Configure(ISiloBuilder hostBuilder)
+			=> hostBuilder
+				.AddRedisGrainStorage("TestingProvider")
+				.AddDefaultRedisBrotliSerializer()
+				.Build(builder => builder.Configure(opts =>
+				{
+					opts.Servers = new List<string> { "localhost" };
+					opts.ClientName = "testing";
+					opts.ThrowExceptionOnInconsistentETag = false;
+				}))
+		;
+	}
 	public class SiloBuilderConfiguratorOrleansSerializerDeflateCompression : ISiloConfigurator
 	{
 		public void Configure(ISiloBuilder hostBuilder)
@@ -64,21 +64,21 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 		;
 	}
 
-	//public class SiloBuilderConfiguratorOrleansSerializerCompressedSegmented : ISiloConfigurator
-	//{
-	//	public void Configure(ISiloBuilder hostBuilder)
-	//		=> hostBuilder
-	//			.AddRedisGrainStorage("TestingProvider")
-	//			.AddDefaultRedisBrotliSerializer()
-	//			.Build(builder => builder.Configure(opts =>
-	//			{
-	//				opts.Servers = new List<string> { "localhost" };
-	//				opts.ClientName = "testing";
-	//				opts.ThrowExceptionOnInconsistentETag = false;
-	//				opts.SegmentSize = (int)1.Kilobytes().Bytes;
-	//			}))
-	//	;
-	//}
+	public class SiloBuilderConfiguratorOrleansSerializerCompressedSegmented : ISiloConfigurator
+	{
+		public void Configure(ISiloBuilder hostBuilder)
+			=> hostBuilder
+				.AddRedisGrainStorage("TestingProvider")
+				.AddDefaultRedisBrotliSerializer()
+				.Build(builder => builder.Configure(opts =>
+				{
+					opts.Servers = new List<string> { "localhost" };
+					opts.ClientName = "testing";
+					opts.ThrowExceptionOnInconsistentETag = false;
+					opts.SegmentSize = (int)1.Kilobytes().Bytes;
+				}))
+		;
+	}
 
 	public class SiloBuilderConfiguratorOrleansSerializerDeflateCompressionSegmented : ISiloConfigurator
 	{
