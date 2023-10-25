@@ -1,4 +1,10 @@
-﻿## [2.0.0](https://github.com/jonathansant/orleans.persistence.redis/compare/1.5.0...2.0.0) (2023-02-21)
+﻿## [2.2.0](https://github.com/jonathansant/orleans.persistence.redis/compare/2.1.0...2.2.0) (2023-10-25)
+
+### Features
+
+- update Orleans version to 7.2.2
+
+## [2.0.0](https://github.com/jonathansant/orleans.persistence.redis/compare/1.5.0...2.0.0) (2023-02-21)
 
 ### Features
 
