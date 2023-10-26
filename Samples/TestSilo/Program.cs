@@ -8,6 +8,8 @@ using System;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Orleans.Runtime;
 
 namespace TestSilo
 {
@@ -21,28 +23,28 @@ namespace TestSilo
 			const int gatewayPort = 30000;
 			var siloAddress = IPAddress.Loopback;
 
-			var builder = new SiloHostBuilder()
-				.Configure<ClusterOptions>(options =>
-				{
-					//options.SiloName = "TestCluster";
-					options.ClusterId = "TestCluster";
-					options.ServiceId = "123";
-				})
-				.UseDevelopmentClustering(
-					options => options.PrimarySiloEndpoint = new IPEndPoint(siloAddress, siloPort))
-				.ConfigureEndpoints(siloAddress, siloPort, gatewayPort)
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(Assembly.Load("TestGrains")).WithReferences())
-				.ConfigureLogging(logging => logging.AddConsole())
-				.AddRedisGrainStorage("Test")
-				.Build(optionsBuilder =>
-				{
-					optionsBuilder.Configure(opts =>
+			var builder = new HostBuilder().UseOrleans(siloBuilder =>
+			{
+				siloBuilder.Configure<ClusterOptions>(options =>
 					{
-						opts.Servers = new[] { "localhost" };
-					});
-				})
-			;
+						//options.SiloName = "TestCluster";
+						options.ClusterId = "TestCluster";
+						options.ServiceId = "123";
+					})
+					.UseDevelopmentClustering(
+						options => options.PrimarySiloEndpoint = new IPEndPoint(siloAddress, siloPort))
+					.ConfigureEndpoints(siloAddress, siloPort, gatewayPort)
+					.AddRedisGrainStorage("Test")
+					.Build(optionsBuilder =>
+					{
+						optionsBuilder.Configure(opts =>
+						{
+							opts.Servers = new[] { "localhost" };
+						});
+					})
+					;
+			});
+				
 
 			var host = builder.Build();
 			await host.StartAsync();

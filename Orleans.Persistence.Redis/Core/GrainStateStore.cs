@@ -73,7 +73,7 @@ namespace Orleans.Persistence.Redis.Core
 			LogDiagnostics(key, state, OperationDirection.Read, stateType);
 
 			if (!_options.HumanReadableSerialization)
-				return (IGrainState<T>)_serializer.Deserialize<T>(state);
+				return (IGrainState<T>)_serializer.Deserialize<IGrainState<T>>(state);
 
 			if (_compression != null)
 				state = _compression.Decompress(state).GetString();
