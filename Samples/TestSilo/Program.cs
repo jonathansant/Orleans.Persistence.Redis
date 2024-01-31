@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
-using Orleans.Persistence.Redis.Config;
 using System;
 using System.Net;
 using System.Reflection;
