@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Orleans.Hosting;
 using Orleans.TestingHost;
 using StackExchange.Redis;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Xunit;
 using static StackExchange.Redis.ConnectionMultiplexer;
 

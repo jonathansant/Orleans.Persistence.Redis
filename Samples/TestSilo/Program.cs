@@ -1,14 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Orleans;
+﻿using Microsoft.Extensions.Hosting;
 using Orleans.Configuration;
-using Orleans.Hosting;
-using System;
 using System.Net;
-using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
-using Orleans.Runtime;
 
 namespace TestSilo
 {
@@ -43,7 +35,7 @@ namespace TestSilo
 					})
 					;
 			});
-				
+
 
 			var host = builder.Build();
 			await host.StartAsync();
