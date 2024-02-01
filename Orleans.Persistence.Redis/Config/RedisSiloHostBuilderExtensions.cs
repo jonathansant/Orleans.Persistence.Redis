@@ -169,24 +169,17 @@ namespace Orleans.Hosting
 			var serializer = provider.GetRequiredServiceByName<ISerializer>(name);
 			var humanReadableSerializer = provider.GetServiceByName<IHumanReadableSerializer>(name);
 			var options = provider.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
-			var compress = provider.GetServiceByName<ICompression>(name);
-
-			if (compress != null)
-				return ActivatorUtilities.CreateInstance<GrainStateStore>(
-					provider,
-					connection,
-					options.Get(name),
-					serializer,
-					humanReadableSerializer,
-					compress
-				);
+			var logger = provider.GetRequiredService<ILogger<GrainStateStore>>();
 
 			return ActivatorUtilities.CreateInstance<GrainStateStore>(
 				provider,
+				name,
 				connection,
 				options.Get(name),
 				serializer,
-				humanReadableSerializer
+				humanReadableSerializer,
+				logger,
+				provider
 			);
 		}
 
