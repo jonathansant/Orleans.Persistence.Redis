@@ -2,9 +2,6 @@
 using Orleans.Persistence.Redis.Utils;
 using Orleans.Runtime;
 using Orleans.Storage;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Orleans.Persistence.Redis.Core
 {

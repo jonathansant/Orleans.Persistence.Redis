@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Orleans.Persistence.Redis.Config;
 using StackExchange.Redis;
-using System;
-using System.Threading.Tasks;
 
 namespace Orleans.Persistence.Redis.Core
 {

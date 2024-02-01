@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Orleans.Persistence.Redis.Serialization
+﻿namespace Orleans.Persistence.Redis.Serialization
 {
 	public interface IHumanReadableSerializer
 	{

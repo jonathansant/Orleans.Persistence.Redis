@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace Orleans.Persistence.Redis.Core
+﻿namespace Orleans.Persistence.Redis.Core
 {
 	public interface IGrainStateStore
 	{

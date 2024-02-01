@@ -1,9 +1,7 @@
 ﻿using Humanizer;
 using Microsoft.Extensions.Configuration;
-using Orleans.Hosting;
 using Orleans.Persistence.Redis.Serialization;
 using Orleans.TestingHost;
-using System.Collections.Generic;
 
 namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 {

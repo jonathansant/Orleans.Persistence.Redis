@@ -1,9 +1,6 @@
 ﻿using Orleans.Persistence.Redis.Compression;
 using Orleans.Persistence.Redis.Serialization;
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Options;
-using Orleans.Hosting;
 
 namespace Orleans.Persistence.Redis.Config
 {

@@ -1,6 +1,5 @@
 ﻿// ref: https://github.com/aspnet/Extensions/blob/master/src/Shared/src/ValueStopwatch/ValueStopwatch.cs
 
-using System;
 using System.Diagnostics;
 
 namespace Orleans.Persistence.Redis.Core
