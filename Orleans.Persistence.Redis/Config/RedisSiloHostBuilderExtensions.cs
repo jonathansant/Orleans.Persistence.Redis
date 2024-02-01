@@ -10,10 +10,10 @@ using Orleans.Persistence.Redis.Config;
 using Orleans.Persistence.Redis.Core;
 using Orleans.Persistence.Redis.Serialization;
 using Orleans.Providers;
-using Orleans.Runtime;
 using Orleans.Serialization;
 using Orleans.Storage;
 using System;
+using Orleans.Runtime;
 using JsonSerializer = Orleans.Persistence.Redis.Serialization.JsonSerializer;
 using OrleansSerializer = Orleans.Persistence.Redis.Serialization.OrleansSerializer;
 
@@ -101,7 +101,7 @@ namespace Orleans.Hosting
 			services.AddSingletonNamedService(name, CreateStateStore);
 			services.ConfigureNamedOptionForLogging<RedisStorageOptions>(name);
 			services.TryAddSingleton(sp =>
-				sp.GetServiceByName<IGrainStorage>(ProviderConstants.DEFAULT_STORAGE_PROVIDER_NAME));
+				sp.GetKeyedService<IGrainStorage>(ProviderConstants.DEFAULT_STORAGE_PROVIDER_NAME));
 
 			return services
 				.AddSingletonNamedService(name, CreateDbConnection)
@@ -149,12 +149,10 @@ namespace Orleans.Hosting
 			);
 
 		internal static ISiloHostBuilder AddCompression<TCompression>(this ISiloHostBuilder builder, string name)
-			where TCompression : ICompression
-		{
-			return builder.ConfigureServices(services =>
+			where TCompression : ICompression =>
+			builder.ConfigureServices(services =>
 				services.AddSingletonNamedService<ICompression>(name, (provider, n)
 					=> ActivatorUtilities.CreateInstance<TCompression>(provider)));
-		}
 
 		private static IGrainStorage CreateRedisStorage(IServiceProvider services, string name)
 		{
@@ -167,9 +165,9 @@ namespace Orleans.Hosting
 		{
 			var connection = provider.GetRequiredServiceByName<DbConnection>(name);
 			var serializer = provider.GetRequiredServiceByName<ISerializer>(name);
-			var humanReadableSerializer = provider.GetServiceByName<IHumanReadableSerializer>(name);
+			var humanReadableSerializer = provider.GetKeyedService<IHumanReadableSerializer>(name);
 			var options = provider.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
-			var compress = provider.GetServiceByName<ICompression>(name);
+			var compress = provider.GetKeyedService<ICompression>(name);
 
 			if (compress != null)
 				return ActivatorUtilities.CreateInstance<GrainStateStore>(
