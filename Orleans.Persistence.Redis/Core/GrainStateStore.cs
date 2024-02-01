@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Orleans.Runtime;
 
 namespace Orleans.Persistence.Redis.Core
 {
@@ -20,7 +21,7 @@ namespace Orleans.Persistence.Redis.Core
 		public int NoOfSegments { get; set; }
 	}
 
-	internal class GrainStateStore : IGrainStateStore
+	public class GrainStateStore : IGrainStateStore
 	{
 		private readonly DbConnection _connection;
 		private readonly ISerializer _serializer;
@@ -30,22 +31,13 @@ namespace Orleans.Persistence.Redis.Core
 		private readonly ICompression _compression;
 
 		public GrainStateStore(
-			DbConnection connection,
-			RedisStorageOptions options,
-			ISerializer serializer,
-			IHumanReadableSerializer humanReadableSerializer,
-			ILogger<GrainStateStore> logger
-		) : this(connection, options, serializer, humanReadableSerializer, logger, null)
-		{
-		}
-
-		public GrainStateStore(
+			string name,
 			DbConnection connection,
 			RedisStorageOptions options,
 			ISerializer serializer,
 			IHumanReadableSerializer humanReadableSerializer,
 			ILogger<GrainStateStore> logger,
-			ICompression compression
+			IServiceProvider services
 		)
 		{
 			_connection = connection;
@@ -53,7 +45,7 @@ namespace Orleans.Persistence.Redis.Core
 			_humanReadableSerializer = humanReadableSerializer;
 			_logger = logger;
 			_options = options;
-			_compression = compression;
+			_compression = services.GetServiceByName<ICompression>(name);
 		}
 
 		public async Task<IGrainState> GetGrainState(string grainId, Type stateType)

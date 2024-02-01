@@ -101,7 +101,7 @@ namespace Orleans.Hosting
 			services.AddSingletonNamedService(name, CreateStateStore);
 			services.ConfigureNamedOptionForLogging<RedisStorageOptions>(name);
 			services.TryAddSingleton(sp =>
-				sp.GetKeyedService<IGrainStorage>(ProviderConstants.DEFAULT_STORAGE_PROVIDER_NAME));
+				sp.GetServiceByName<IGrainStorage>(ProviderConstants.DEFAULT_STORAGE_PROVIDER_NAME));
 
 			return services
 				.AddSingletonNamedService(name, CreateDbConnection)
@@ -165,27 +165,21 @@ namespace Orleans.Hosting
 		{
 			var connection = provider.GetRequiredServiceByName<DbConnection>(name);
 			var serializer = provider.GetRequiredServiceByName<ISerializer>(name);
-			var humanReadableSerializer = provider.GetKeyedService<IHumanReadableSerializer>(name);
+			var humanReadableSerializer = provider.GetServiceByName<IHumanReadableSerializer>(name);
 			var options = provider.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
-			var compress = provider.GetKeyedService<ICompression>(name);
-
-			if (compress != null)
-				return ActivatorUtilities.CreateInstance<GrainStateStore>(
-					provider,
-					connection,
-					options.Get(name),
-					serializer,
-					humanReadableSerializer,
-					compress
-				);
+			var logger = provider.GetRequiredService<ILogger<GrainStateStore>>();
 
 			return ActivatorUtilities.CreateInstance<GrainStateStore>(
 				provider,
+				name,
 				connection,
 				options.Get(name),
 				serializer,
-				humanReadableSerializer
+				humanReadableSerializer,
+				logger,
+				provider
 			);
+
 		}
 
 		private static DbConnection CreateDbConnection(IServiceProvider provider, string name)
