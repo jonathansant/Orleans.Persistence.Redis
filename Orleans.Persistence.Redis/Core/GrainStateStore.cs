@@ -4,6 +4,7 @@ using Orleans.Persistence.Redis.Compression;
 using Orleans.Persistence.Redis.Config;
 using Orleans.Persistence.Redis.Serialization;
 using Orleans.Persistence.Redis.Utils;
+using Orleans.Runtime;
 using Orleans.Storage;
 using StackExchange.Redis;
 using System;
