@@ -1,20 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>Sucrose.Orleans.Persistence.Redis</PackageId>
     <Product>Sucrose.Orleans.Persistence.Redis</Product>
     <RepositoryUrl>https://github.com/jonathansant/Orleans.Persistence.Redis</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <!--<PackageReference Include="Brotli.NET" Version="2.1.1" />-->
-    <PackageReference Include="MessagePack" Version="2.5.140" />
-    <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="3.7.1" />
-    <PackageReference Include="StackExchange.Redis" Version="2.7.17" />
+    <PackageReference Include="Brotli.NET" Version="2.1.1" />
+    <PackageReference Include="MessagePack" Version="2.1.143" />
+    <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="3.2.0" />
+    <PackageReference Include="StackExchange.Redis" Version="2.2.62" />
     <PackageReference Include="System.Data.HashFunction.xxHash" Version="2.0.0" />
-    <PackageReference Include="ByteSize" Version="2.1.2" />
-    <!--<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />-->
+    <PackageReference Include="ByteSize" Version="2.0.0" />
   </ItemGroup>
 
 </Project>

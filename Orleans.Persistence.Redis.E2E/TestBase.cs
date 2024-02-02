@@ -44,14 +44,15 @@ namespace Orleans.Persistence.Redis.E2E
 
 		protected static async Task FlushDb()
 		{
-			await using var connection = await ConnectAsync(new ConfigurationOptions
+			using (var connection = await ConnectAsync(new ConfigurationOptions
 			{
 				EndPoints = { "localhost" },
 				AllowAdmin = true
-			});
-
-			var server = connection.GetServer("localhost:6379");
-			await server.FlushAllDatabasesAsync();
+			}))
+			{
+				var server = connection.GetServer("localhost:6379");
+				await server.FlushAllDatabasesAsync();
+			}
 		}
 	}
 

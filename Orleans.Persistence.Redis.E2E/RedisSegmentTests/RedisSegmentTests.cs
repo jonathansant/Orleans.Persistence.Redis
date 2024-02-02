@@ -75,7 +75,9 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 
 		[Fact]
 		public async Task Test()
-			=> await PerformTest("SerializerCompressedSegmentedTest");
+		{
+			await PerformTest("SerializerCompressedSegmentedTest");
+		}
 	}
 
 	public class SiloBuilderConfiguratorOrleansSerializerDeflateCompressionSegmentedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrleansSerializerDeflateCompressionSegmented>

@@ -1,4 +1,5 @@
-﻿using Orleans.Serialization;
+﻿using Brotli;
+using Orleans.Serialization;
 using System;
 using System.IO;
 using System.IO.Compression;
