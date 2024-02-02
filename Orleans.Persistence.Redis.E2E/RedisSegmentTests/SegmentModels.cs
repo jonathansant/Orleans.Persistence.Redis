@@ -1,10 +1,11 @@
 ﻿using Orleans.Providers;
-using System.Threading.Tasks;
 
 namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 {
+	[GenerateSerializer]
 	public class BigData
 	{
+		[Id(0)]
 		public string Data { get; set; }
 	}
 
@@ -18,7 +19,7 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 	[StorageProvider(ProviderName = "TestingProvider")]
 	public class TestGrainSegments : Grain<BigData>, ITestGrainSegments
 	{
-		public override async Task OnActivateAsync()
+		public override async Task OnActivateAsync(CancellationToken _)
 		{
 		}
 

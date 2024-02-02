@@ -1,12 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace Orleans.Persistence.Redis.Core
+﻿namespace Orleans.Persistence.Redis.Core
 {
 	public interface IGrainStateStore
 	{
-		Task<IGrainState> GetGrainState(string grainId, Type stateType);
-		Task UpdateGrainState(string grainId, IGrainState grainState);
-		Task DeleteGrainState(string grainId, IGrainState grainState);
+		Task<IGrainState<T>> GetGrainState<T>(string grainId, Type stateType);
+		Task UpdateGrainState<T>(string grainId, IGrainState<T> grainState);
+		Task DeleteGrainState<T>(string grainId, IGrainState<T> grainState);
 	}
 }

@@ -1,18 +1,14 @@
 ﻿using Humanizer;
 using Microsoft.Extensions.Configuration;
-using Orleans.Hosting;
 using Orleans.Persistence.Redis.Serialization;
 using Orleans.TestingHost;
-using System.Collections.Generic;
 
 namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 {
-	public class SiloBuilderConfiguratorOrleansSerializer : ISiloBuilderConfigurator
+	public class SiloBuilderConfiguratorOrleansSerializer : ISiloConfigurator
 	{
-		public void Configure(ISiloHostBuilder hostBuilder)
+		public void Configure(ISiloBuilder hostBuilder)
 			=> hostBuilder
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(ITestGrainSegments).Assembly).WithReferences())
 				.AddRedisGrainStorage("TestingProvider")
 				.Build(builder => builder.Configure(opts =>
 				{
@@ -22,12 +18,10 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 				}))
 		;
 	}
-	public class SiloBuilderConfiguratorOrleansSerializerCompressed : ISiloBuilderConfigurator
+	public class SiloBuilderConfiguratorOrleansSerializerCompressed : ISiloConfigurator
 	{
-		public void Configure(ISiloHostBuilder hostBuilder)
+		public void Configure(ISiloBuilder hostBuilder)
 			=> hostBuilder
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(ITestGrainSegments).Assembly).WithReferences())
 				.AddRedisGrainStorage("TestingProvider")
 				.AddDefaultRedisBrotliSerializer()
 				.Build(builder => builder.Configure(opts =>
@@ -38,12 +32,10 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 				}))
 		;
 	}
-	public class SiloBuilderConfiguratorOrleansSerializerDeflateCompression : ISiloBuilderConfigurator
+	public class SiloBuilderConfiguratorOrleansSerializerDeflateCompression : ISiloConfigurator
 	{
-		public void Configure(ISiloHostBuilder hostBuilder)
+		public void Configure(ISiloBuilder hostBuilder)
 			=> hostBuilder
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(ITestGrainSegments).Assembly).WithReferences())
 				.AddRedisGrainStorage("TestingProvider")
 				.AddRedisSerializer<DeflateSerializer>()
 				.Build(builder => builder.Configure(opts =>
@@ -55,12 +47,10 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 		;
 	}
 
-	public class SiloBuilderConfiguratorOrleansSerializerSegmented : ISiloBuilderConfigurator
+	public class SiloBuilderConfiguratorOrleansSerializerSegmented : ISiloConfigurator
 	{
-		public void Configure(ISiloHostBuilder hostBuilder)
+		public void Configure(ISiloBuilder hostBuilder)
 			=> hostBuilder
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(ITestGrainSegments).Assembly).WithReferences())
 				.AddRedisGrainStorage("TestingProvider")
 				.Build(builder => builder.Configure(opts =>
 				{
@@ -72,12 +62,10 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 		;
 	}
 
-	public class SiloBuilderConfiguratorOrleansSerializerCompressedSegmented : ISiloBuilderConfigurator
+	public class SiloBuilderConfiguratorOrleansSerializerCompressedSegmented : ISiloConfigurator
 	{
-		public void Configure(ISiloHostBuilder hostBuilder)
+		public void Configure(ISiloBuilder hostBuilder)
 			=> hostBuilder
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(ITestGrainSegments).Assembly).WithReferences())
 				.AddRedisGrainStorage("TestingProvider")
 				.AddDefaultRedisBrotliSerializer()
 				.Build(builder => builder.Configure(opts =>
@@ -90,12 +78,10 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 		;
 	}
 
-	public class SiloBuilderConfiguratorOrleansSerializerDeflateCompressionSegmented : ISiloBuilderConfigurator
+	public class SiloBuilderConfiguratorOrleansSerializerDeflateCompressionSegmented : ISiloConfigurator
 	{
-		public void Configure(ISiloHostBuilder hostBuilder)
+		public void Configure(ISiloBuilder hostBuilder)
 			=> hostBuilder
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(ITestGrainSegments).Assembly).WithReferences())
 				.AddRedisGrainStorage("TestingProvider")
 				.AddRedisSerializer<DeflateSerializer>()
 				.Build(builder => builder.Configure(opts =>
@@ -108,12 +94,10 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 		;
 	}
 
-	public class SiloBuilderConfiguratorHumanSerializer : ISiloBuilderConfigurator
+	public class SiloBuilderConfiguratorHumanSerializer : ISiloConfigurator
 	{
-		public void Configure(ISiloHostBuilder hostBuilder)
+		public void Configure(ISiloBuilder hostBuilder)
 			=> hostBuilder
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(ITestGrainSegments).Assembly).WithReferences())
 				.AddRedisGrainStorage("TestingProvider")
 				.Build(builder => builder.Configure(opts =>
 				{
@@ -125,12 +109,10 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 		;
 	}
 
-	public class SiloBuilderConfiguratorHumanSerializerSegmented : ISiloBuilderConfigurator
+	public class SiloBuilderConfiguratorHumanSerializerSegmented : ISiloConfigurator
 	{
-		public void Configure(ISiloHostBuilder hostBuilder)
+		public void Configure(ISiloBuilder hostBuilder)
 			=> hostBuilder
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(ITestGrainSegments).Assembly).WithReferences())
 				.AddRedisGrainStorage("TestingProvider")
 				.Build(builder => builder.Configure(opts =>
 				{
@@ -143,12 +125,10 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 		;
 	}
 
-	public class SiloBuilderConfiguratorHumanSerializerCompressed : ISiloBuilderConfigurator
+	public class SiloBuilderConfiguratorHumanSerializerCompressed : ISiloConfigurator
 	{
-		public void Configure(ISiloHostBuilder hostBuilder)
+		public void Configure(ISiloBuilder hostBuilder)
 			=> hostBuilder
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(ITestGrainSegments).Assembly).WithReferences())
 				.AddRedisGrainStorage("TestingProvider")
 				.AddCompression<Compression.RawDeflateCompression>()
 				//.AddCompression<Compression.BrotliCompression>()
@@ -163,12 +143,10 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 				}));
 	}
 
-	public class SiloBuilderConfiguratorHumanSerializerCompressedWithSegments : ISiloBuilderConfigurator
+	public class SiloBuilderConfiguratorHumanSerializerCompressedWithSegments : ISiloConfigurator
 	{
-		public void Configure(ISiloHostBuilder hostBuilder)
+		public void Configure(ISiloBuilder hostBuilder)
 			=> hostBuilder
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(ITestGrainSegments).Assembly).WithReferences())
 				.AddRedisGrainStorage("TestingProvider")
 				.AddCompression<Compression.RawDeflateCompression>()
 				//.AddCompression<Compression.BrotliCompression>()
@@ -188,8 +166,7 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests.SiloConfigurator
 	{
 		public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)
 			=> clientBuilder
-				.ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(ITestGrain).Assembly).WithReferences())
-				.AddSimpleMessageStreamProvider("TestStream")
+				.AddMemoryStreams("TestStream")
 		;
 	}
 }

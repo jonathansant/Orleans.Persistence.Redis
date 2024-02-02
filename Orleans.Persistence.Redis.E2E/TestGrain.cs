@@ -1,8 +1,5 @@
 ﻿using Orleans.Providers;
 using Orleans.Streams;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Orleans.Persistence.Redis.E2E
 {
@@ -35,15 +32,15 @@ namespace Orleans.Persistence.Redis.E2E
 			return WriteStateAsync();
 		}
 
-		public override Task OnActivateAsync()
+		public override Task OnActivateAsync(CancellationToken _)
 		{
-			var provider = GetStreamProvider("TestStream");
-			_stream = provider.GetStream<string>(Consts.StreamGuid, "deactivate-notifications");
+			var provider = this.GetStreamProvider("TestStream");
+			_stream = provider.GetStream<string>("deactivate-notifications", Consts.StreamGuid);
 
 			return Task.CompletedTask;
 		}
 
-		public override Task OnDeactivateAsync() => _stream.OnNextAsync("done");
+		public override Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken) => _stream.OnNextAsync("done");
 	}
 
 	[StorageProvider(ProviderName = "TestingProvider2")]
@@ -61,10 +58,10 @@ namespace Orleans.Persistence.Redis.E2E
 
 	public class TestStreamerGrain : Grain, ITestStreamerGrain
 	{
-		public override async Task OnActivateAsync()
+		public override async Task OnActivateAsync(CancellationToken _)
 		{
-			var provider = GetStreamProvider("TestStream");
-			var stream = provider.GetStream<int>(Consts.StreamGuid, "multi-notifications");
+			var provider = this.GetStreamProvider("TestStream");
+			var stream = provider.GetStream<int>("multi-notifications", Consts.StreamGuid);
 
 			var handles = await stream.GetAllSubscriptionHandles();
 			if (handles?.Count > 0)
@@ -108,11 +105,14 @@ namespace Orleans.Persistence.Redis.E2E
 		Task Invoke();
 	}
 
+	[GenerateSerializer]
 	public class MockState
 	{
 		private static readonly Random Rand = new Random();
 
+		[Id(0)]
 		public int NoHeads { get; set; }
+		[Id(1)]
 		public string Name { get; set; }
 
 		public static MockState Empty { get; } = new MockState();

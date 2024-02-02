@@ -1,6 +1,4 @@
-﻿using Orleans;
-using Orleans.Providers;
-using System.Threading.Tasks;
+﻿using Orleans.Providers;
 
 namespace TestGrains
 {
@@ -19,11 +17,6 @@ namespace TestGrains
 			await WriteStateAsync();
 
 			return phrase;
-		}
-
-		public override async Task OnActivateAsync()
-		{
-
 		}
 	}
 }

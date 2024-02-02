@@ -1,16 +1,13 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Orleans.Hosting;
 using Orleans.TestingHost;
 using StackExchange.Redis;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Xunit;
 using static StackExchange.Redis.ConnectionMultiplexer;
 
 namespace Orleans.Persistence.Redis.E2E
 {
 	public class TestBase<TSilo, TClient> : IAsyncLifetime
-		where TSilo : ISiloBuilderConfigurator, new()
+		where TSilo : ISiloConfigurator, new()
 		where TClient : IClientBuilderConfigurator, new()
 	{
 		private short _noOfSilos;
@@ -44,15 +41,14 @@ namespace Orleans.Persistence.Redis.E2E
 
 		protected static async Task FlushDb()
 		{
-			using (var connection = await ConnectAsync(new ConfigurationOptions
+			await using var connection = await ConnectAsync(new ConfigurationOptions
 			{
 				EndPoints = { "localhost" },
 				AllowAdmin = true
-			}))
-			{
-				var server = connection.GetServer("localhost:6379");
-				await server.FlushAllDatabasesAsync();
-			}
+			});
+
+			var server = connection.GetServer("localhost:6379");
+			await server.FlushAllDatabasesAsync();
 		}
 	}
 
@@ -60,17 +56,14 @@ namespace Orleans.Persistence.Redis.E2E
 	{
 		public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)
 			=> clientBuilder
-				.ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(ITestGrain).Assembly).WithReferences())
-				.AddSimpleMessageStreamProvider("TestStream")
+				.AddMemoryStreams("TestStream")
 		;
 	}
 
-	public class SiloBuilderConfigurator : ISiloBuilderConfigurator
+	public class SiloBuilderConfigurator : ISiloConfigurator
 	{
-		public void Configure(ISiloHostBuilder hostBuilder)
+		public void Configure(ISiloBuilder hostBuilder)
 			=> hostBuilder
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(ITestGrain).Assembly).WithReferences())
 				.AddRedisGrainStorage("TestingProvider")
 				.Build(builder => builder.Configure(opts =>
 					{
@@ -82,11 +75,11 @@ namespace Orleans.Persistence.Redis.E2E
 				.AddRedisGrainStorage("TestingProvider2")
 				.Build(builder => builder.Configure(opts =>
 				{
-					opts.Servers = new List<string> { "127.0.0.1" };
+					opts.Servers = new List<string> { "localhost" };
 					opts.ClientName = "testing";
 					opts.KeyPrefix = "prefix";
 				}))
-				.AddSimpleMessageStreamProvider("TestStream")
+				.AddMemoryStreams("TestStream")
 				.AddMemoryGrainStorage("PubSubStore")
 		;
 	}

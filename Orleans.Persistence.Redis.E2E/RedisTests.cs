@@ -1,5 +1,4 @@
 ﻿using Orleans.Streams;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Orleans.Persistence.Redis.E2E
@@ -28,7 +27,7 @@ namespace Orleans.Persistence.Redis.E2E
 			var done = new TaskCompletionSource<bool>();
 
 			var provider = Cluster.Client.GetStreamProvider("TestStream");
-			var stream = provider.GetStream<string>(Consts.StreamGuid, "deactivate-notifications");
+			var stream = provider.GetStream<string>("deactivate-notifications", Consts.StreamGuid);
 			await stream.SubscribeAsync((message, seq) =>
 			{
 				done.SetResult(true);
@@ -61,7 +60,7 @@ namespace Orleans.Persistence.Redis.E2E
 			var done = new TaskCompletionSource<bool>();
 
 			var provider = Cluster.Client.GetStreamProvider("TestStream");
-			var stream = provider.GetStream<string>(Consts.StreamGuid, "deactivate-notifications");
+			var stream = provider.GetStream<string>("deactivate-notifications", Consts.StreamGuid);
 			await stream.SubscribeAsync((message, seq) =>
 			{
 				done.SetResult(true);

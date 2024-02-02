@@ -2,7 +2,7 @@
 {
 	public static class GrainStateExtensions
 	{
-		public static IGrainState From(this IGrainState newState, IGrainState other)
+		public static IGrainState<T> From<T>(this IGrainState<T> newState, IGrainState<T> other)
 		{
 			newState.State = other.State;
 			newState.ETag = other.ETag;
@@ -10,9 +10,9 @@
 			return newState;
 		}
 
-		public static IGrainState Empty(this IGrainState newState)
+		public static IGrainState<T> Empty<T>(this IGrainState<T> newState)
 		{
-			newState.State = null;
+			newState.State = default;
 			newState.ETag = null;
 
 			return newState;

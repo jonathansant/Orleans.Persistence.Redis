@@ -1,10 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Orleans.Hosting;
 using Orleans.Streams;
 using Orleans.TestingHost;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Orleans.Persistence.Redis.E2E
@@ -25,7 +21,7 @@ namespace Orleans.Persistence.Redis.E2E
 			var done = new TaskCompletionSource<bool>();
 
 			var provider = Cluster.Client.GetStreamProvider("TestStream");
-			var stream = provider.GetStream<string>(Consts.StreamGuid, "deactivate-notifications");
+			var stream = provider.GetStream<string>("deactivate-notifications", Consts.StreamGuid);
 			await stream.SubscribeAsync((message, seq) =>
 			{
 				done.SetResult(true);
@@ -45,17 +41,14 @@ namespace Orleans.Persistence.Redis.E2E
 		{
 			public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)
 				=> clientBuilder
-					.ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(ITestGrain).Assembly).WithReferences())
-					.AddSimpleMessageStreamProvider("TestStream")
+					.AddMemoryStreams("TestStream")
 			;
 		}
 
-		public class SiloBuilderConfigurator : ISiloBuilderConfigurator
+		public class SiloBuilderConfigurator : ISiloConfigurator
 		{
-			public void Configure(ISiloHostBuilder hostBuilder)
+			public void Configure(ISiloBuilder hostBuilder)
 				=> hostBuilder
-					.ConfigureApplicationParts(parts =>
-						parts.AddApplicationPart(typeof(ITestGrain).Assembly).WithReferences())
 					.AddRedisGrainStorage("TestingProvider")
 					.AddRedisDefaultHumanReadableSerializer()
 					.Build(builder => builder.Configure(opts =>
@@ -66,7 +59,7 @@ namespace Orleans.Persistence.Redis.E2E
 							opts.KeyPrefix = "prefix-json";
 						})
 					)
-					.AddSimpleMessageStreamProvider("TestStream")
+					.AddMemoryStreams("TestStream")
 					.AddMemoryGrainStorage("PubSubStore")
 			;
 		}
@@ -86,7 +79,7 @@ namespace Orleans.Persistence.Redis.E2E
 			await grain.Invoke();
 
 			var provider = Cluster.Client.GetStreamProvider("TestStream");
-			var stream = provider.GetStream<int>(Consts.StreamGuid, "multi-notifications");
+			var stream = provider.GetStream<int>("multi-notifications", Consts.StreamGuid);
 
 			for (var i = 0; i < 10; i++)
 			{
@@ -104,17 +97,14 @@ namespace Orleans.Persistence.Redis.E2E
 		{
 			public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)
 				=> clientBuilder
-					.ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(ITestGrain).Assembly).WithReferences())
-					.AddSimpleMessageStreamProvider("TestStream")
+					.AddMemoryStreams("TestStream")
 			;
 		}
 
-		public class SiloBuilderConfigurator : ISiloBuilderConfigurator
+		public class SiloBuilderConfigurator : ISiloConfigurator
 		{
-			public void Configure(ISiloHostBuilder hostBuilder)
+			public void Configure(ISiloBuilder hostBuilder)
 				=> hostBuilder
-					.ConfigureApplicationParts(parts =>
-						parts.AddApplicationPart(typeof(ITestGrain).Assembly).WithReferences())
 					.AddRedisGrainStorage("TestingProvider")
 					.AddRedisDefaultHumanReadableSerializer()
 					.Build(builder => builder.Configure(opts =>
@@ -133,7 +123,7 @@ namespace Orleans.Persistence.Redis.E2E
 						opts.HumanReadableSerialization = true;
 						opts.KeyPrefix = "prefix-json-pubsub";
 					}))
-					.AddSimpleMessageStreamProvider("TestStream")
+					.AddMemoryStreams("TestStream")
 			;
 		}
 	}

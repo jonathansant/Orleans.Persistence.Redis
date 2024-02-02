@@ -1,10 +1,6 @@
 using Orleans.TestingHost;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -75,9 +71,7 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 
 		[Fact]
 		public async Task Test()
-		{
-			await PerformTest("SerializerCompressedSegmentedTest");
-		}
+			=> await PerformTest("SerializerCompressedSegmentedTest");
 	}
 
 	public class SiloBuilderConfiguratorOrleansSerializerDeflateCompressionSegmentedTest : RedisSegmentTests<SiloConfigurator.SiloBuilderConfiguratorOrleansSerializerDeflateCompressionSegmented>
@@ -150,7 +144,7 @@ namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 		}
 	}
 
-	public class RedisSegmentTests<T> : TestBase<T, SiloConfigurator.ClientBuilderConfigurator> where T : ISiloBuilderConfigurator, new()
+	public class RedisSegmentTests<T> : TestBase<T, SiloConfigurator.ClientBuilderConfigurator> where T : ISiloConfigurator, new()
 	{
 		private readonly ITestOutputHelper _output;
 

@@ -1,7 +1,4 @@
-﻿using System;
-using Orleans;
-using Orleans.Providers;
-using System.Threading.Tasks;
+﻿using Orleans.Providers;
 
 namespace TestGrains
 {
@@ -21,7 +18,7 @@ namespace TestGrains
 			await ClearStateAsync();
 		}
 
-		public override Task OnActivateAsync()
+		public override Task OnActivateAsync(CancellationToken _)
 		{
 			Console.WriteLine(State);
 			return Task.CompletedTask;
