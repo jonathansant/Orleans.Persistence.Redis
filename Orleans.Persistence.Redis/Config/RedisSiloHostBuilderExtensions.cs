@@ -108,30 +108,23 @@ public static class RedisSiloBuilderExtensions
 		return ActivatorUtilities.CreateInstance<RedisGrainStorage>(services, name, store, connection);
 	}
 
-	private static IGrainStateStore CreateStateStore(IServiceProvider provider, string name)
-	{
-		var connection = provider.GetRequiredServiceByName<DbConnection>(name);
-		var serializer = provider.GetRequiredServiceByName<ISerializer>(name);
-		var humanReadableSerializer = provider.GetServiceByName<IHumanReadableSerializer>(name);
-		var options = provider.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
-		var compress = provider.GetServiceByName<ICompression>(name);
+  private static IGrainStateStore CreateStateStore(IServiceProvider provider, string name)
+  {
+			var connection = provider.GetRequiredServiceByName<DbConnection>(name);
+			var serializer = provider.GetRequiredServiceByName<ISerializer>(name);
+			var humanReadableSerializer = provider.GetServiceByName<IHumanReadableSerializer>(name);
+			var options = provider.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
+			var logger = provider.GetRequiredService<ILogger<GrainStateStore>>();
 
-		if (compress != null)
-			return ActivatorUtilities.CreateInstance<GrainStateStore>(
-				provider,
+		return ActivatorUtilities.CreateInstance<GrainStateStore>(
+			provider,
+				name,
 				connection,
 				options.Get(name),
 				serializer,
 				humanReadableSerializer,
-				compress
-			);
-
-		return ActivatorUtilities.CreateInstance<GrainStateStore>(
-			provider,
-			connection,
-			options.Get(name),
-			serializer,
-			humanReadableSerializer
+				logger,
+				provider
 		);
 	}
 
