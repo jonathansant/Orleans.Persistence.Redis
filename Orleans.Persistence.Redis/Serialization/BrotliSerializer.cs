@@ -1,7 +1,5 @@
 ﻿using Orleans.Serialization;
-using System.IO;
 using System.IO.Compression;
-using BrotliStream = Brotli.BrotliStream;
 
 namespace Orleans.Persistence.Redis.Serialization
 {

@@ -1,5 +1,4 @@
 ﻿using Orleans.Streams;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Orleans.Persistence.Redis.E2E

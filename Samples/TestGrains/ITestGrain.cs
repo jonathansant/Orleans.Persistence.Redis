@@ -1,7 +1,4 @@
-﻿using System.Threading.Tasks;
-using Orleans;
-
-namespace TestGrains
+﻿namespace TestGrains
 {
 	public interface ITestGrain : IGrainWithStringKey
 	{

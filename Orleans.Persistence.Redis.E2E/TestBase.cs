@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Orleans.Hosting;
 using Orleans.TestingHost;
 using StackExchange.Redis;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Xunit;
 using static StackExchange.Redis.ConnectionMultiplexer;
 
@@ -44,15 +41,14 @@ namespace Orleans.Persistence.Redis.E2E
 
 		protected static async Task FlushDb()
 		{
-			using (var connection = await ConnectAsync(new ConfigurationOptions
+			await using var connection = await ConnectAsync(new ConfigurationOptions
 			{
 				EndPoints = { "localhost" },
 				AllowAdmin = true
-			}))
-			{
-				var server = connection.GetServer("localhost:6379");
-				await server.FlushAllDatabasesAsync();
-			}
+			});
+
+			var server = connection.GetServer("localhost:6379");
+			await server.FlushAllDatabasesAsync();
 		}
 	}
 

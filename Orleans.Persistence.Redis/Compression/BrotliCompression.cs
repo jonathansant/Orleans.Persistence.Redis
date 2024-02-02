@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.IO.Compression;
+﻿using System.IO.Compression;
 
 namespace Orleans.Persistence.Redis.Compression
 {
@@ -9,7 +8,7 @@ namespace Orleans.Persistence.Redis.Compression
 		{
 			using var memoryStream = new MemoryStream(bytes);
 			using var outputStream = new MemoryStream();
-			using (var decompressStream = new Brotli.BrotliStream(memoryStream, CompressionMode.Decompress))
+			using (var decompressStream = new BrotliStream(memoryStream, CompressionMode.Decompress))
 			{
 				decompressStream.CopyTo(outputStream);
 			}
@@ -20,7 +19,7 @@ namespace Orleans.Persistence.Redis.Compression
 		public byte[] Compress(byte[] bytes)
 		{
 			using var memoryStream = new MemoryStream();
-			using (var brotliStream = new Brotli.BrotliStream(memoryStream, CompressionMode.Compress))
+			using (var brotliStream = new BrotliStream(memoryStream, CompressionMode.Compress))
 			{
 				brotliStream.Write(bytes, 0, bytes.Length);
 			}

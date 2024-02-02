@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Orleans.Persistence.Redis.Compression;
-using System;
 
 namespace Orleans.Persistence.Redis.Serialization
 {

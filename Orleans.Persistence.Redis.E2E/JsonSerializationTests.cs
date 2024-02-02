@@ -1,11 +1,6 @@
-﻿using System;
-using Microsoft.Extensions.Configuration;
-using Orleans.Hosting;
+﻿using Microsoft.Extensions.Configuration;
 using Orleans.Streams;
 using Orleans.TestingHost;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Orleans.Persistence.Redis.E2E

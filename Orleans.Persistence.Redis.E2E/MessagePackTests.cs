@@ -1,11 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Orleans.Hosting;
-using Orleans.Persistence.Redis.Config;
 using Orleans.Persistence.Redis.Serialization;
 using Orleans.Streams;
 using Orleans.TestingHost;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Orleans.Persistence.Redis.E2E

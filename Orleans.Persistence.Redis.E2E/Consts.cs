@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Orleans.Persistence.Redis.E2E
+﻿namespace Orleans.Persistence.Redis.E2E
 {
 	public static class Consts
 	{

@@ -1,6 +1,4 @@
-﻿using System.Threading;
-using Orleans.Providers;
-using System.Threading.Tasks;
+﻿using Orleans.Providers;
 
 namespace Orleans.Persistence.Redis.E2E.RedisSegmentTests
 {

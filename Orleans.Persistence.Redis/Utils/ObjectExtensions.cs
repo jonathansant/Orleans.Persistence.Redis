@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Data.HashFunction.xxHash;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Orleans.Persistence.Redis.Utils
 {
