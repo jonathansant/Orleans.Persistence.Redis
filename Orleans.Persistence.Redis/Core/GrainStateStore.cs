@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Orleans.Runtime;
 
 namespace Orleans.Persistence.Redis.Core
 {
@@ -21,7 +22,7 @@ namespace Orleans.Persistence.Redis.Core
 		public int NoOfSegments { get; set; }
 	}
 
-	internal class GrainStateStore : IGrainStateStore
+	public class GrainStateStore : IGrainStateStore
 	{
 		private readonly DbConnection _connection;
 		private readonly ISerializer _serializer;
