@@ -9,8 +9,8 @@
   <ItemGroup>
     <!--<PackageReference Include="Brotli.NET" Version="2.1.1" />-->
     <PackageReference Include="MessagePack" Version="2.5.140" />
-    <PackageReference Include="Microsoft.Orleans.Runtime" Version="7.2.2" />
-    <PackageReference Include="Microsoft.Orleans.Sdk" Version="7.2.2" />
+    <PackageReference Include="Microsoft.Orleans.Runtime" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Orleans.Sdk" Version="8.0.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.7.17" />
     <PackageReference Include="System.Data.HashFunction.xxHash" Version="2.0.0" />
     <PackageReference Include="ByteSize" Version="2.1.2" />

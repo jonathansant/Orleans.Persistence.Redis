@@ -1,10 +1,10 @@
 ﻿using ByteSizeLib;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orleans.Persistence.Redis.Compression;
 using Orleans.Persistence.Redis.Config;
 using Orleans.Persistence.Redis.Serialization;
 using Orleans.Persistence.Redis.Utils;
-using Orleans.Runtime;
 using Orleans.Storage;
 using StackExchange.Redis;
 using System.Text;
@@ -41,7 +41,7 @@ namespace Orleans.Persistence.Redis.Core
 			_humanReadableSerializer = humanReadableSerializer;
 			_logger = logger;
 			_options = options;
-			_compression = services.GetServiceByName<ICompression>(name);
+			_compression = services.GetKeyedService<ICompression>(name);
 		}
 
 		public async Task<IGrainState<T>> GetGrainState<T>(string grainId, Type stateType)
