@@ -21,7 +21,7 @@ jobs:
     name: Package
     uses: jonathansant/.github/.github/workflows/dotnet-ci.yml@main
     with:
-      dotnet-version: 7.0.x
+      dotnet-version: 8.0.x
       publishable: ${{ contains(fromJSON('["develop", "master", "workflow", "feature/workflow"]'), github.ref_name) || endsWith(github.ref_name, '.x')  }}
     secrets:
       nuget-auth-token: ${{ secrets.NUGET_KEY }}
