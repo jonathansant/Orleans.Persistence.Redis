@@ -1,4 +1,10 @@
-﻿## [3.0.0](https://github.com/jonathansant/orleans.persistence.redis/compare/2.2.0...3.0.0) (2024-02-06)
+﻿## [3.0.1](https://github.com/jonathansant/orleans.persistence.redis/compare/2.2.0...3.0.0) (2024-02-14)
+
+### Bug Fixes
+
+- fix configuration
+
+## [3.0.0](https://github.com/jonathansant/orleans.persistence.redis/compare/2.2.0...3.0.0) (2024-02-06)
 
 ### Features
 
