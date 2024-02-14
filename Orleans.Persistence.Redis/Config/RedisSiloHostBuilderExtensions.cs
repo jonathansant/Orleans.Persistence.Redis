@@ -38,26 +38,26 @@ public static class RedisSiloBuilderExtensions
 
 		// services.AddTransient<IConfigurationValidator>(sp => new DynamoDBGrainStorageOptionsValidator(sp.GetService<IOptionsSnapshot<RedisStorageOptions>>().Get(name), name));
 		return services
-				.AddKeyedSingleton<IGrainStateStore>(name, (sp, k) =>
-					{
-						var key = (string)k;
-						var connection = sp.GetRequiredKeyedService<DbConnection>(key);
-						var serializer = sp.GetRequiredKeyedService<ISerializer>(key);
-						var humanReadableSerializer = sp.GetKeyedService<IHumanReadableSerializer>(key);
-						var options = sp.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
-						var logger = sp.GetRequiredService<ILogger<GrainStateStore>>();
+			.AddKeyedSingleton<IGrainStateStore>(name, (sp, k) =>
+				{
+					var key = (string)k;
+					var connection = sp.GetRequiredKeyedService<DbConnection>(key);
+					var serializer = sp.GetRequiredKeyedService<ISerializer>(key);
+					var humanReadableSerializer = sp.GetKeyedService<IHumanReadableSerializer>(key);
+					var options = sp.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
+					var logger = sp.GetRequiredService<ILogger<GrainStateStore>>();
 
-						return ActivatorUtilities.CreateInstance<GrainStateStore>(
-							sp,
-							key,
-							connection,
-							options.Get(key),
-							serializer,
-							humanReadableSerializer,
-							logger,
-							sp
-						);
-					}
+					return ActivatorUtilities.CreateInstance<GrainStateStore>(
+						sp,
+						key,
+						connection,
+						options.Get(key),
+						serializer,
+						humanReadableSerializer,
+						logger,
+						sp
+					);
+				}
 			)
 			.AddKeyedSingleton(name, (sp, k) =>
 				{
@@ -65,7 +65,8 @@ public static class RedisSiloBuilderExtensions
 					var optionsSnapshot = sp.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
 					var logger = sp.GetRequiredService<ILogger<DbConnection>>();
 					return ActivatorUtilities.CreateInstance<DbConnection>(sp, optionsSnapshot.Get(key), logger);
-				})
+				}
+			)
 			.AddKeyedSingleton<IGrainStorage>(name, (sp, k) =>
 				{
 					var key = (string)k;
@@ -79,7 +80,8 @@ public static class RedisSiloBuilderExtensions
 					var store = sp.GetRequiredKeyedService<IGrainStateStore>(key);
 					var connection = sp.GetRequiredKeyedService<DbConnection>(key);
 					return ActivatorUtilities.CreateInstance<RedisGrainStorage>(sp, key, store, connection);
-				})
+				}
+			)
 			;
 	}
 
