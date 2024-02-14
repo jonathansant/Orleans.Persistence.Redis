@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿#nullable enable
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -9,8 +9,7 @@ using Orleans.Persistence.Redis.Compression;
 using Orleans.Persistence.Redis.Config;
 using Orleans.Persistence.Redis.Core;
 using Orleans.Persistence.Redis.Serialization;
-using Orleans.Providers;
-using Orleans.Runtime;
+using Orleans.Runtime.Hosting;
 using Orleans.Serialization;
 using Orleans.Storage;
 using JsonSerializer = Orleans.Persistence.Redis.Serialization.JsonSerializer;
@@ -21,10 +20,8 @@ namespace Orleans.Hosting;
 
 public static class RedisSiloBuilderExtensions
 {
-	public static RedisStorageOptionsBuilder AddRedisGrainStorage(
-		this ISiloBuilder builder,
-		string name
-	) => new RedisStorageOptionsBuilder(builder, name);
+	public static RedisStorageOptionsBuilder AddRedisGrainStorage(this ISiloBuilder builder, string name)
+		=> new(builder, name);
 
 	public static RedisStorageOptionsBuilder AddRedisGrainStorageAsDefault(
 		this ISiloBuilder builder
@@ -33,21 +30,59 @@ public static class RedisSiloBuilderExtensions
 	internal static IServiceCollection AddRedisGrainStorage(
 		this IServiceCollection services,
 		string name,
-		Action<OptionsBuilder<RedisStorageOptions>> configureOptions = null
+		Action<OptionsBuilder<RedisStorageOptions>>? configureOptions = null
 	)
 	{
 		configureOptions?.Invoke(services.AddOptions<RedisStorageOptions>(name));
-		// services.AddTransient<IConfigurationValidator>(sp => new DynamoDBGrainStorageOptionsValidator(sp.GetService<IOptionsSnapshot<RedisStorageOptions>>().Get(name), name));
-		services.AddKeyedSingleton(name, CreateStateStore);
 		services.ConfigureNamedOptionForLogging<RedisStorageOptions>(name);
-		services.TryAddSingleton(sp =>
-			sp.GetKeyedService<IGrainStorage>(ProviderConstants.DEFAULT_STORAGE_PROVIDER_NAME));
 
+		// services.AddTransient<IConfigurationValidator>(sp => new DynamoDBGrainStorageOptionsValidator(sp.GetService<IOptionsSnapshot<RedisStorageOptions>>().Get(name), name));
 		return services
-			.AddKeyedSingleton(name, CreateDbConnection)
-			.AddKeyedSingleton(name, CreateRedisStorage)
-			.AddKeyedSingleton(name, (provider, n)
-				=> (ILifecycleParticipant<ISiloLifecycle>)provider.GetRequiredKeyedService<IGrainStorage>(n));
+			.AddKeyedSingleton<IGrainStateStore>(name, (sp, k) =>
+				{
+					var key = (string)k;
+					var connection = sp.GetRequiredKeyedService<DbConnection>(key);
+					var serializer = sp.GetRequiredKeyedService<ISerializer>(key);
+					var humanReadableSerializer = sp.GetKeyedService<IHumanReadableSerializer>(key);
+					var options = sp.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
+					var logger = sp.GetRequiredService<ILogger<GrainStateStore>>();
+
+					return ActivatorUtilities.CreateInstance<GrainStateStore>(
+						sp,
+						key,
+						connection,
+						options.Get(key),
+						serializer,
+						humanReadableSerializer,
+						logger,
+						sp
+					);
+				}
+			)
+			.AddKeyedSingleton(name, (sp, k) =>
+				{
+					var key = (string)k;
+					var optionsSnapshot = sp.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
+					var logger = sp.GetRequiredService<ILogger<DbConnection>>();
+					return ActivatorUtilities.CreateInstance<DbConnection>(sp, optionsSnapshot.Get(key), logger);
+				}
+			)
+			.AddKeyedSingleton<IGrainStorage>(name, (sp, k) =>
+				{
+					var key = (string)k;
+					var store = sp.GetRequiredKeyedService<IGrainStateStore>(key);
+					var connection = sp.GetRequiredKeyedService<DbConnection>(key);
+					return ActivatorUtilities.CreateInstance<RedisGrainStorage>(sp, key, store, connection);
+				}
+			)
+			.AddGrainStorage(name, (sp, key) =>
+				{
+					var store = sp.GetRequiredKeyedService<IGrainStateStore>(key);
+					var connection = sp.GetRequiredKeyedService<DbConnection>(key);
+					return ActivatorUtilities.CreateInstance<RedisGrainStorage>(sp, key, store, connection);
+				}
+			)
+			;
 	}
 
 	internal static ISiloBuilder AddRedisDefaultSerializer(this ISiloBuilder builder, string name)
@@ -99,40 +134,6 @@ public static class RedisSiloBuilderExtensions
 			services.AddKeyedSingleton<IHumanReadableSerializer>(name, (provider, n)
 				=> ActivatorUtilities.CreateInstance<TSerializer>(provider, cfg?.Invoke(provider)))
 		);
-
-	private static IGrainStorage CreateRedisStorage(IServiceProvider services, string name)
-	{
-		var store = services.GetRequiredKeyedService<IGrainStateStore>(name);
-		var connection = services.GetRequiredKeyedService<DbConnection>(name);
-		return ActivatorUtilities.CreateInstance<RedisGrainStorage>(services, name, store, connection);
-	}
-
-	private static IGrainStateStore CreateStateStore(IServiceProvider provider, string name)
-	{
-		var connection = provider.GetRequiredKeyedService<DbConnection>(name);
-		var serializer = provider.GetRequiredKeyedService<ISerializer>(name);
-		var humanReadableSerializer = provider.GetKeyedServices<IHumanReadableSerializer>(name);
-		var options = provider.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
-		var logger = provider.GetRequiredService<ILogger<GrainStateStore>>();
-
-		return ActivatorUtilities.CreateInstance<GrainStateStore>(
-			provider,
-				name,
-				connection,
-				options.Get(name),
-				serializer,
-				humanReadableSerializer,
-				logger,
-				provider
-		);
-	}
-
-	private static DbConnection CreateDbConnection(IServiceProvider provider, string name)
-	{
-		var optionsSnapshot = provider.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
-		var logger = provider.GetRequiredService<ILogger<DbConnection>>();
-		return ActivatorUtilities.CreateInstance<DbConnection>(provider, optionsSnapshot.Get(name), logger);
-	}
 }
 
 public static class RedisDefaultJsonSerializerSettings
