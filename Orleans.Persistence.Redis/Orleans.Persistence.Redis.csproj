@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <!--<PackageReference Include="Brotli.NET" Version="2.1.1" />-->
-    <PackageReference Include="MessagePack" Version="2.5.140" />
+    <PackageReference Include="MessagePack" Version="2.5.187" />
     <PackageReference Include="Microsoft.Orleans.Runtime" Version="8.0.0" />
     <PackageReference Include="Microsoft.Orleans.Sdk" Version="8.0.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.7.17" />
