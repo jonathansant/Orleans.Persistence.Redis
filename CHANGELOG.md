@@ -1,4 +1,22 @@
-﻿## [3.0.0](https://github.com/jonathansant/orleans.persistence.redis/compare/2.2.0...3.0.0) (2024-02-06)
+﻿## [4.0.0](https://github.com/jonathansant/orleans.persistence.redis/compare/3.0.0...4.0.0) (2026-05-16)
+
+### Features
+
+- update Orleans version to 10.1.0
+- update target framework to .NET 10.0
+- update MessagePack to 3.1.4
+- aspire support
+
+### Bug Fixes
+
+- fix DI resolution for IOptionsSnapshot in AddKeyedSingleton factories - replaced with IOptionsMonitor (singleton) to resolve from root provider
+
+### BREAKING CHANGES
+
+- update Orleans version to 10.1.0 (from 8.0.0)
+- update target framework to .NET 10.0 (from .NET 8.0)
+
+## [3.0.0](https://github.com/jonathansant/orleans.persistence.redis/compare/2.2.0...3.0.0) (2024-02-06)
 
 ### Features
 

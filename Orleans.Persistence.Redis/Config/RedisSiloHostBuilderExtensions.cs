@@ -44,7 +44,7 @@ public static class RedisSiloBuilderExtensions
 					var connection = sp.GetRequiredKeyedService<DbConnection>(key);
 					var serializer = sp.GetRequiredKeyedService<ISerializer>(key);
 					var humanReadableSerializer = sp.GetKeyedService<IHumanReadableSerializer>(key);
-					var options = sp.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
+					var options = sp.GetRequiredService<IOptionsMonitor<RedisStorageOptions>>();
 					var logger = sp.GetRequiredService<ILogger<GrainStateStore>>();
 
 					return ActivatorUtilities.CreateInstance<GrainStateStore>(
@@ -62,9 +62,9 @@ public static class RedisSiloBuilderExtensions
 			.AddKeyedSingleton(name, (sp, k) =>
 				{
 					var key = (string)k;
-					var optionsSnapshot = sp.GetRequiredService<IOptionsSnapshot<RedisStorageOptions>>();
+					var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<RedisStorageOptions>>();
 					var logger = sp.GetRequiredService<ILogger<DbConnection>>();
-					return ActivatorUtilities.CreateInstance<DbConnection>(sp, optionsSnapshot.Get(key), logger);
+					return ActivatorUtilities.CreateInstance<DbConnection>(sp, optionsMonitor.Get(key), logger);
 				}
 			)
 			.AddKeyedSingleton<IGrainStorage>(name, (sp, k) =>
