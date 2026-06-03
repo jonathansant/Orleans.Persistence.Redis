@@ -12,9 +12,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Orleans.Sdk" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Orleans.Server" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Orleans.TestingHost" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Orleans.Sdk" Version="10.1.0" />
+    <PackageReference Include="Microsoft.Orleans.Server" Version="10.1.0" />
+    <PackageReference Include="Microsoft.Orleans.TestingHost" Version="10.1.0" />
   </ItemGroup>
 
   <ItemGroup>
