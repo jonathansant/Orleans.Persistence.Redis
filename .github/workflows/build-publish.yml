@@ -122,7 +122,7 @@ jobs:
           name: packages
 
       - name: Publish
-        run: dotnet nuget push "*.nupkg" -k $NUGET_AUTH_TOKEN -s ${{ env.SOURCE_URL }} --skip-duplicate
+        run: dotnet nuget push "*.nupkg" -k ${{ secrets.NUGET_KEY }} -s ${{ env.SOURCE_URL }} --skip-duplicate
 
       - name: Git tag
         run: |
