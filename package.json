@@ -1,7 +1,7 @@
 {
   "name": "sucrose.orleans.persistence.redis",
   "version": "4.0.0",
-  "description": "Orleans Redis Persistence Provider",
+  "description": "Orleans Redis Persistence Provider that uses StackExchange.Redis as the client library.",
   "solution": "Orleans.Persistence.Redis-build.sln",
   "dependencies": {},
   "devDependencies": {},
