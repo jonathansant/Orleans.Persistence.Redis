@@ -16,12 +16,115 @@ on:
     paths-ignore:
       - '**.md'
 
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  NUGET_AUTH_TOKEN: ${{ secrets.NUGET_KEY }}
+  DOTNET_VERSION: 10.0.x
+  SOURCE_URL: 'https://api.nuget.org/v3/index.json'
+
 jobs:
-  package:
-    name: Package
-    uses: jonathansant/.github/.github/workflows/dotnet-ci.yml@main
-    with:
-      dotnet-version: 8.0.x
-      publishable: ${{ contains(fromJSON('["develop", "master", "workflow", "feature/workflow"]'), github.ref_name) || endsWith(github.ref_name, '.x')  }}
-    secrets:
-      nuget-auth-token: ${{ secrets.NUGET_KEY }}
+  build:
+    name: Package / build
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version-builder.outputs.version }}
+      publishable: ${{ steps.set-publishable.outputs.publishable }}
+    steps:
+      - name: Set publishable flag
+        id: set-publishable
+        run: |
+          REF="${{ github.ref_name }}"
+          if [[ "$REF" == "develop" || "$REF" == "master" || "$REF" == "workflow" || "$REF" == "feature/workflow" ]] || [[ "$REF" == *.x ]]; then
+            echo "publishable=true" >> $GITHUB_OUTPUT
+          else
+            echo "publishable=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Print environment versions
+        run: |
+          NPM_V=$(npm -v)
+          echo npm version':' $NPM_V
+          DOTNET_CLI_V=$(dotnet --version)
+          echo dotnet input version':' ${{ env.DOTNET_VERSION }}
+          echo "::notice::dotnet cli version $DOTNET_CLI_V"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          source-url: ${{ env.SOURCE_URL }}
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget
+
+      - name: Retrieve Build Sln
+        run: |
+          buildSln=$(ls | grep .*-build\.sln$) || echo ""
+          echo "BUILD_SLN=$buildSln" >> $GITHUB_ENV
+          echo $buildSln
+
+      - name: Build version
+        id: version-builder
+        if: steps.set-publishable.outputs.publishable == 'true'
+        uses: sketch7/version-builder-action@main
+        with:
+          preid-branches: main,master,develop
+
+      - name: Set version envs
+        if: steps.set-publishable.outputs.publishable == 'true'
+        run: |
+          echo "VERSION=${{ steps.version-builder.outputs.version }}" >> $GITHUB_ENV
+          echo "ASSEMBLY_VERSION=${{ steps.version-builder.outputs.nonSemverVersion }}" >> $GITHUB_ENV
+
+      - name: Build
+        run: dotnet build $BUILD_SLN -c Release
+
+      - name: Pack
+        if: steps.set-publishable.outputs.publishable == 'true'
+        run: dotnet pack $BUILD_SLN -p:PackageVersion=$VERSION -p:AssemblyVersion=$ASSEMBLY_VERSION -o ./artifacts -c release --include-symbols -p:SymbolPackageFormat=snupkg --no-build --no-restore
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        if: steps.set-publishable.outputs.publishable == 'true'
+        with:
+          name: packages
+          retention-days: 1
+          path: artifacts
+
+  publish:
+    name: Package / publish
+    needs: build
+    runs-on: ubuntu-latest
+    if: needs.build.outputs.publishable == 'true'
+    env:
+      VERSION: ${{ needs.build.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: packages
+
+      - name: Publish
+        run: dotnet nuget push "*.nupkg" -k $NUGET_AUTH_TOKEN -s ${{ env.SOURCE_URL }} --skip-duplicate
+
+      - name: Git tag
+        run: |
+          git tag $VERSION
+          git push origin $VERSION
